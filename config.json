@@ -2,7 +2,9 @@
   "env": {
     "POLYGON_API_KEY": "ZAuGprSaaMMS8_7GeDVAzHJWfr0Vggqb",
     "DATA_FOLDER": "data/",
-    "TENSORBOARD_LOG": "tb_logs/"
+    "TENSORBOARD_LOG": "tb_logs/",
+    "MODEL_DIR": "models/",
+    "EVAL_DIR": "eval/"
   },
   "training": {
     "DEFAULT_INTERVAL": "5min",
@@ -13,6 +15,9 @@
       1.0
     ],
     "REWARD_SCALE": 1.0,
+    "TOTAL_TIMESTEPS": 1000000,
+    "SAVE_FREQ": 100000,
+    "EVAL_FREQ": 50000,
     "PPO_PARAMS": {
       "learning_rate": 0.0003,
       "n_steps": 2048,
@@ -77,6 +82,27 @@
       "data/AAPL_test.csv"
     ],
     "n_eval_episodes": 5,
-    "deterministic": true
+    "deterministic": true,
+    "render": false,
+    "output_file": "eval/eval_results.json"
+  },
+  "logging": {
+    "use_mlflow": true,
+    "mlflow_uri": "http://localhost:5000",
+    "experiment_name": "PPO_Trading",
+    "log_params": true,
+    "log_metrics": true
+  },
+  "metrics": {
+    "enable": true,
+    "track": [
+      "win_rate",
+      "profit_factor",
+      "sharpe_ratio",
+      "max_drawdown",
+      "expectancy",
+      "avg_trade_duration",
+      "r_multiple"
+    ]
   }
 }
