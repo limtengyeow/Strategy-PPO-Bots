@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/3b8854eb02c64ab88b68483b11e31fd5/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3b8854eb02c64ab88b68483b11e31fd5
+run_name: skittish-cat-65
+run_uuid: 3b8854eb02c64ab88b68483b11e31fd5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747229481671
+status: 1
+tags: []
+user_id: root

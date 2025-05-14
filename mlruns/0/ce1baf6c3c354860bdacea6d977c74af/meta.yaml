@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/ce1baf6c3c354860bdacea6d977c74af/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ce1baf6c3c354860bdacea6d977c74af
+run_name: languid-colt-949
+run_uuid: ce1baf6c3c354860bdacea6d977c74af
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747231885403
+status: 1
+tags: []
+user_id: root

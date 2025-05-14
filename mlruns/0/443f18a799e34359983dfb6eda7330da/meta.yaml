@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/443f18a799e34359983dfb6eda7330da/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 443f18a799e34359983dfb6eda7330da
+run_name: ambitious-stag-7
+run_uuid: 443f18a799e34359983dfb6eda7330da
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747229108951
+status: 1
+tags: []
+user_id: root

@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/ae94cbe3332a4a3297f98c5afd5872ed/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ae94cbe3332a4a3297f98c5afd5872ed
+run_name: zealous-hen-743
+run_uuid: ae94cbe3332a4a3297f98c5afd5872ed
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747240467007
+status: 1
+tags: []
+user_id: root

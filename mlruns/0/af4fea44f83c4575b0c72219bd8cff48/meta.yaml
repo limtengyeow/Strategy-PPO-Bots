@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/af4fea44f83c4575b0c72219bd8cff48/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: af4fea44f83c4575b0c72219bd8cff48
+run_name: intelligent-hog-567
+run_uuid: af4fea44f83c4575b0c72219bd8cff48
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747233805947
+status: 1
+tags: []
+user_id: root

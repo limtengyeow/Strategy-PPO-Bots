@@ -1,19 +1,17 @@
 {
   "env": {
-    "POLYGON_API_KEY": "ZAuGprSaaMMS8_7GeDVAzHJWfr0Vggqb",
+    "POLYGON_API_KEY": "your_polygon_api_key",
     "DATA_FOLDER": "data/",
     "TENSORBOARD_LOG": "tb_logs/",
     "MODEL_DIR": "models/",
     "EVAL_DIR": "eval/"
   },
   "training": {
+    "OBS_WINDOW": 20,
     "DEFAULT_INTERVAL": "5min",
-    "NORM_OBS": true,
-    "NORM_REWARD": true,
-    "CLIP_REWARD": [
-      -1.0,
-      1.0
-    ],
+    "NORM_OBS": false,
+    "NORM_REWARD": false,
+    "CLIP_REWARD": null,
     "REWARD_SCALE": 1.0,
     "TOTAL_TIMESTEPS": 1000000,
     "SAVE_FREQ": 100000,
@@ -26,7 +24,7 @@
       "gamma": 0.99,
       "gae_lambda": 0.95,
       "clip_range": 0.2,
-      "ent_coef": 0.0,
+      "ent_coef": 0.01,
       "vf_coef": 0.5,
       "policy_kwargs": {
         "net_arch": [
@@ -39,47 +37,35 @@
     },
     "FEATURES": [
       {
-        "type": "sma_cross",
-        "fast_window": 50,
-        "slow_window": 200,
-        "timeframe": "1d"
-      },
-      {
-        "type": "sma_cross",
-        "fast_window": 50,
-        "slow_window": 200,
-        "timeframe": "1wk"
-      },
-      {
-        "type": "donchian_breakout",
-        "window": 20,
-        "timeframe": "5min"
+        "type": "price",
+        "field": "close",
+        "normalize": true
       }
     ],
-    "REWARD_COMPONENTS": [
-      {
-        "type": "pnl",
-        "scale": 1.0
-      },
-      {
-        "type": "turnover_penalty",
-        "weight": -0.0002
-      },
-      {
-        "type": "holding_bonus",
-        "per_bar": 0.0001,
-        "min_bars": 3
-      },
-      {
-        "type": "time_decay",
-        "decay_rate": -1e-05
-      }
-    ]
+
+"REWARD_COMPONENTS": [
+  {
+    "type": "pnl",
+    "scale": 10000.0
+  },
+  {
+    "type": "cut_loss",
+    "threshold": -0.01,
+    "penalty_ratio": 2.0
+  },
+  {
+    "type": "overtrade_penalty",
+    "min_duration": 5,
+    "penalty_ratio": 1.0
+  }
+],
+"DEBUG_REWARDS": true
+
+
   },
   "evaluation": {
     "data_files": [
-      "data/NVDA_test.csv",
-      "data/AAPL_test.csv"
+      "data/NVDA_test.csv"
     ],
     "n_eval_episodes": 5,
     "deterministic": true,

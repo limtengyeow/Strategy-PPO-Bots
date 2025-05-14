@@ -1,3 +1,4 @@
+
 from stable_baselines3.common.callbacks import BaseCallback
 import numpy as np
 import pandas as pd
@@ -5,7 +6,7 @@ import mlflow
 import json
 
 class PerformanceMetricsCallback(BaseCallback):
-    def __init__(self, config_path="config/config.json", verbose=0):
+    def __init__(self, config_path="config/config.json", verbose=1):
         super().__init__(verbose)
         with open(config_path) as f:
             cfg = json.load(f)
@@ -14,16 +15,29 @@ class PerformanceMetricsCallback(BaseCallback):
         self.episode_trades = []
 
     def _on_step(self) -> bool:
-        info = self.locals["infos"][0]
+        info = self.locals.get("infos", [{}])[0]
+        reward = self.locals.get("rewards", [0])[0]
+        done = self.locals.get("dones", [False])[0]
+
         if "trades" in info:
             self.episode_trades.extend(info["trades"])
-        if self.locals["dones"][0]:
-            reward = self.locals["rewards"][0]
+
+        if done:
             self.episode_rewards.append(reward)
-            metrics = self.compute_metrics(pd.DataFrame(self.episode_trades))
-            self.log_metrics(metrics)
-            self.episode_trades = []
+            if self.episode_trades:
+                metrics = self.compute_metrics(pd.DataFrame(self.episode_trades))
+                self.log_metrics(metrics)
+                self.episode_trades = []
+
         return True
+
+    def _on_rollout_end(self):
+        rewards = self.locals.get("rewards")
+        if rewards is not None and len(rewards) > 0:
+            avg_reward = np.mean(rewards)
+            max_reward = np.max(rewards)
+            if self.verbose > 0:
+                print(f"[Callback] Rollout finished at step {self.num_timesteps}, Avg Reward: {avg_reward:.4f}, Max Reward: {max_reward:.4f}")
 
     def compute_metrics(self, trades_df):
         if trades_df.empty:

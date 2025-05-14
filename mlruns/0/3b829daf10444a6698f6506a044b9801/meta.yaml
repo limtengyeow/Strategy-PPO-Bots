@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/3b829daf10444a6698f6506a044b9801/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3b829daf10444a6698f6506a044b9801
+run_name: valuable-ape-760
+run_uuid: 3b829daf10444a6698f6506a044b9801
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747228741221
+status: 1
+tags: []
+user_id: root

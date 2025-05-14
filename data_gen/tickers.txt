@@ -1,4 +1,1 @@
 NVDA
-AAPL
-MSFT
-AMZN
