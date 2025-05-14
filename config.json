@@ -1,4 +1,82 @@
 {
-  "env": {},
-  "training": {}
+  "env": {
+    "POLYGON_API_KEY": "ZAuGprSaaMMS8_7GeDVAzHJWfr0Vggqb",
+    "DATA_FOLDER": "data/",
+    "TENSORBOARD_LOG": "tb_logs/"
+  },
+  "training": {
+    "DEFAULT_INTERVAL": "5min",
+    "NORM_OBS": true,
+    "NORM_REWARD": true,
+    "CLIP_REWARD": [
+      -1.0,
+      1.0
+    ],
+    "REWARD_SCALE": 1.0,
+    "PPO_PARAMS": {
+      "learning_rate": 0.0003,
+      "n_steps": 2048,
+      "batch_size": 64,
+      "n_epochs": 10,
+      "gamma": 0.99,
+      "gae_lambda": 0.95,
+      "clip_range": 0.2,
+      "ent_coef": 0.0,
+      "vf_coef": 0.5,
+      "policy_kwargs": {
+        "net_arch": [
+          128,
+          128,
+          64
+        ],
+        "activation_fn": "relu"
+      }
+    },
+    "FEATURES": [
+      {
+        "type": "sma_cross",
+        "fast_window": 50,
+        "slow_window": 200,
+        "timeframe": "1d"
+      },
+      {
+        "type": "sma_cross",
+        "fast_window": 50,
+        "slow_window": 200,
+        "timeframe": "1wk"
+      },
+      {
+        "type": "donchian_breakout",
+        "window": 20,
+        "timeframe": "5min"
+      }
+    ],
+    "REWARD_COMPONENTS": [
+      {
+        "type": "pnl",
+        "scale": 1.0
+      },
+      {
+        "type": "turnover_penalty",
+        "weight": -0.0002
+      },
+      {
+        "type": "holding_bonus",
+        "per_bar": 0.0001,
+        "min_bars": 3
+      },
+      {
+        "type": "time_decay",
+        "decay_rate": -1e-05
+      }
+    ]
+  },
+  "evaluation": {
+    "data_files": [
+      "data/NVDA_test.csv",
+      "data/AAPL_test.csv"
+    ],
+    "n_eval_episodes": 5,
+    "deterministic": true
+  }
 }

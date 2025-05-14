@@ -1,6 +1,8 @@
-stable-baselines3[extra]
+stable-baselines3
 gym==0.25.2
 pandas
 numpy
 matplotlib
 tensorboard
+cloudpickle
+polygon-api-client

@@ -1,1 +1,4 @@
-# Placeholder
+NVDA
+AAPL
+MSFT
+AMZN
