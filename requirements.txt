@@ -1,0 +1,6 @@
+stable-baselines3[extra]
+gym==0.25.2
+pandas
+numpy
+matplotlib
+tensorboard
