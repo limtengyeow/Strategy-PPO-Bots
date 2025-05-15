@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/6051f251ac6142b782bba13d5bcb8df0/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 6051f251ac6142b782bba13d5bcb8df0
+run_name: legendary-deer-782
+run_uuid: 6051f251ac6142b782bba13d5bcb8df0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747281270129
+status: 1
+tags: []
+user_id: root

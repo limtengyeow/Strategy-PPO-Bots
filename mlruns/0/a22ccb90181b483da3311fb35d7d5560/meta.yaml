@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/a22ccb90181b483da3311fb35d7d5560/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a22ccb90181b483da3311fb35d7d5560
+run_name: flawless-donkey-7
+run_uuid: a22ccb90181b483da3311fb35d7d5560
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747242071475
+status: 1
+tags: []
+user_id: root

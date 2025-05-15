@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/f479312514d54faabd324aa7beedf345/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f479312514d54faabd324aa7beedf345
+run_name: languid-stork-299
+run_uuid: f479312514d54faabd324aa7beedf345
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747243243138
+status: 1
+tags: []
+user_id: root

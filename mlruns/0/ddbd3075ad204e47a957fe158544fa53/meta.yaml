@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/ddbd3075ad204e47a957fe158544fa53/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ddbd3075ad204e47a957fe158544fa53
+run_name: nimble-gull-820
+run_uuid: ddbd3075ad204e47a957fe158544fa53
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747246306570
+status: 1
+tags: []
+user_id: root

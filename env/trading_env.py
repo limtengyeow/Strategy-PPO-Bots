@@ -1,3 +1,4 @@
+
 import gym
 import numpy as np
 import pandas as pd
@@ -18,6 +19,7 @@ class TradingEnv(gym.Env):
 
         self.norm_obs = self.cfg.get("NORM_OBS", False)
         self.norm_type = self.cfg.get("NORM_TYPE", "returns")
+        self.norm_volume = self.cfg.get("NORM_VOLUME", False)
 
         if self.norm_obs and self.data is not None and self.norm_type == "returns":
             self.data = self._compute_return_features(self.data)
@@ -63,7 +65,7 @@ class TradingEnv(gym.Env):
         done = self.current_step >= len(self.data) - 1
 
         reward = self._get_reward()
-        self.last_reward = 0.0
+        self.last_reward = reward
 
         obs = self._get_features()
         self.obs_buffer.append(obs)
@@ -83,14 +85,19 @@ class TradingEnv(gym.Env):
         df = df.copy()
         if "timestamp" in df.columns:
             df = df.drop(columns=["timestamp"])
-        return df.pct_change().fillna(0)
+
+        for col in df.columns:
+            if col.lower() == "volume" and self.norm_volume:
+                df[col] = (df[col] - df[col].mean()) / (df[col].std() + 1e-6)
+            else:
+                df[col] = df[col].pct_change().fillna(0)
+        return df
 
     def _get_features(self):
         row = self.data.iloc[self.current_step]
         if "timestamp" in row.index:
             row = row.drop("timestamp")
-        features = row.values.astype(np.float32)
-        return features
+        return row.values.astype(np.float32)
 
     def _get_price(self):
         return self.data.iloc[self.current_step]["close"]
@@ -110,30 +117,16 @@ class TradingEnv(gym.Env):
         return 0.0
 
     def _close_position(self):
-        reward = 0.0  # reward is now handled in _get_reward() only
-        # self.last_reward no longer used for reward output
-
         current_price = self._get_price()
         exit_step = self.current_step
-        duration = exit_step - self.open_step if self.open_step is not None else 0
-
         if self.open_step is not None:
             trade = {
                 "pnl": self._get_unrealized_return(),
-                "duration": duration,
+                "duration": exit_step - self.open_step,
                 "risk": 0.01,
                 "equity": current_price
             }
             self.trade_log.append(trade)
-
-            # apply overtrade penalty if needed
-            for comp in self.reward_components:
-                if comp["type"] == "overtrade_penalty" and duration < comp.get("min_duration", 5):
-                    unrealized = self._get_unrealized_return()
-                    base_scale = next((comp.get("scale", 1000.0) for comp in self.reward_components if comp["type"] == "pnl"), 1000.0)
-                    penalty = -abs(unrealized * base_scale * comp.get("penalty_ratio", 1.0))
-                    self.last_reward += penalty
-
         self.position = 0
         self.entry_price = 0.0
         self.highest_price_since_entry = 0.0
@@ -177,11 +170,19 @@ class TradingEnv(gym.Env):
                     reward += trend_bonus
                     if debug_rewards:
                         reward_details.append(("trend_hold_bonus", trend_bonus))
+            elif comp["type"] == "overtrade_penalty" and self.open_step is not None:
+                duration = self.current_step - self.open_step
+                if duration < comp.get("min_duration", 5):
+                    penalty = -abs(unrealized * base_scale * comp.get("penalty_ratio", 1.0))
+                    reward += penalty
+                    if debug_rewards:
+                        reward_details.append(("overtrade_penalty", penalty))
 
         if debug_rewards and reward_details:
             print(f"[REWARD DEBUG] Step {self.current_step}:")
             for name, val in reward_details:
                 print(f"  {name}: {val:.4f}")
+
         return reward
 
     def _take_action(self, action):

@@ -9,7 +9,11 @@
   "training": {
     "OBS_WINDOW": 20,
     "DEFAULT_INTERVAL": "5min",
-    "NORM_OBS": false,
+    "NORM_OBS": true,
+    "NORM_TYPE": "returns",
+    "ALLOW_SHORT": false,
+    "NORM_VOLUME_TYPE": "zscore",
+
     "NORM_REWARD": false,
     "CLIP_REWARD": null,
     "REWARD_SCALE": 1.0,
@@ -24,7 +28,7 @@
       "gamma": 0.99,
       "gae_lambda": 0.95,
       "clip_range": 0.2,
-      "ent_coef": 0.01,
+      "ent_coef": 0.2,
       "vf_coef": 0.5,
       "policy_kwargs": {
         "net_arch": [
@@ -46,7 +50,7 @@
 "REWARD_COMPONENTS": [
   {
     "type": "pnl",
-    "scale": 10000.0
+    "scale": 1000.0
   },
   {
     "type": "cut_loss",

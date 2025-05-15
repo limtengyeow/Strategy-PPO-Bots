@@ -10,8 +10,23 @@ from env.trading_env import TradingEnv
 from callbacks.performance_metrics_callback import PerformanceMetricsCallback
 
 # === Load config.json ===
-with open("config.json") as f:
-    cfg = json.load(f)
+def load_config(config_path="config.json", test_mode=False):
+    with open(config_path) as f:
+        cfg = json.load(f)
+
+    if test_mode:
+        cfg["training"]["TOTAL_TIMESTEPS"] = 2048
+        cfg["training"]["EVAL_FREQ"] = 0
+        cfg["training"]["SAVE_FREQ"] = 2048
+        cfg["logging"]["use_mlflow"] = False
+
+    return cfg
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
+cfg = load_config(test_mode=args.test)
 
 # === Parameters ===
 data_dir = cfg["env"]["DATA_FOLDER"]

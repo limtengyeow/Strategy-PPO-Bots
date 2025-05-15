@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/ec50291ae0444a8bb8e1c2e492ccd841/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ec50291ae0444a8bb8e1c2e492ccd841
+run_name: charming-rat-527
+run_uuid: ec50291ae0444a8bb8e1c2e492ccd841
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747242449403
+status: 1
+tags: []
+user_id: root

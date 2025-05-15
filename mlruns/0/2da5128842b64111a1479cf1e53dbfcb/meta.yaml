@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/2da5128842b64111a1479cf1e53dbfcb/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 2da5128842b64111a1479cf1e53dbfcb
+run_name: invincible-gnu-891
+run_uuid: 2da5128842b64111a1479cf1e53dbfcb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747243784515
+status: 1
+tags: []
+user_id: root

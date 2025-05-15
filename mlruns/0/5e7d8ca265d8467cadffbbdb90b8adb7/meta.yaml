@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/5e7d8ca265d8467cadffbbdb90b8adb7/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5e7d8ca265d8467cadffbbdb90b8adb7
+run_name: rumbling-doe-153
+run_uuid: 5e7d8ca265d8467cadffbbdb90b8adb7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747269204733
+status: 1
+tags: []
+user_id: root

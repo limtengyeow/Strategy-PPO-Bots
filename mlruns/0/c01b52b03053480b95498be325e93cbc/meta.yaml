@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/c01b52b03053480b95498be325e93cbc/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c01b52b03053480b95498be325e93cbc
+run_name: dazzling-seal-25
+run_uuid: c01b52b03053480b95498be325e93cbc
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747269510551
+status: 1
+tags: []
+user_id: root
