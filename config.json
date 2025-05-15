@@ -1,6 +1,6 @@
 {
   "env": {
-    "POLYGON_API_KEY": "your_polygon_api_key",
+    "POLYGON_API_KEY": "ZAuGprSaaMMS8_7GeDVAzHJWfr0Vggqb",
     "DATA_FOLDER": "data/",
     "TENSORBOARD_LOG": "tb_logs/",
     "MODEL_DIR": "models/",

@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/fb98857c4ad1404e9ede0eac6f58f4bd/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fb98857c4ad1404e9ede0eac6f58f4bd
+run_name: industrious-crow-953
+run_uuid: fb98857c4ad1404e9ede0eac6f58f4bd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747312268724
+status: 1
+tags: []
+user_id: root
