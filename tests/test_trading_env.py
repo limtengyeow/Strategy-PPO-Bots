@@ -1,19 +1,27 @@
 import os
 import unittest
 import json
+import pandas as pd
 import numpy as np
 from env.trading_env import TradingEnv
 
 class TestTradingEnv(unittest.TestCase):
  
     def setUp(self):
-        # Load configuration from the root directory relative to this test file
+
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(base_dir, "..", "config.json")
         with open(config_path) as f:
             config = json.load(f)
-        self.env = TradingEnv(config)
+
+        dummy_data = pd.DataFrame({
+            "close": np.linspace(100, 200, 100)
+        })
+
+        from env.trading_env import TradingEnv
+        self.env = TradingEnv(config=config, df=dummy_data)
         self.env.reset()
+
 
     def test_reset_output_shape_and_type(self):
         # Ensure the reset observation is a NumPy array and has the correct shape
