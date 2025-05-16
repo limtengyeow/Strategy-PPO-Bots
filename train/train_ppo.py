@@ -71,7 +71,7 @@ for ticker, files in ticker_files.items():
     # ✅ DEBUG BLOCK: Check config and CSV contents
     print("\n=== DEBUG START ===")
     print("[DEBUG] CONFIG keys:", cfg.keys())
-    print("[DEBUG] FEATURES in config:", cfg.get("training", {}).get("FEATURES"))
+    print("[DEBUG] FEATURES in config:", cfg.get("features", {}).get("FEATURES"))
     print("[DEBUG] DataFrame columns:", df.columns.tolist())
     print("[DEBUG] DataFrame dtypes:\n", df.dtypes)
     print("[DEBUG] First few rows:\n", df.head())

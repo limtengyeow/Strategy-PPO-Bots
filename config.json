@@ -6,19 +6,45 @@
     "MODEL_DIR": "models/",
     "EVAL_DIR": "eval/"
   },
-  "training": {
-    "OBS_WINDOW": 20,
-    "DEFAULT_INTERVAL": "5min",
-    "NORM_OBS": true,
-    "NORM_TYPE": "returns",
-    "ALLOW_SHORT": true,
-    "ALLOW_LONG": true,
-  
-    "NORM_VOLUME_TYPE": "zscore",
 
-    "NORM_REWARD": false,
-    "CLIP_REWARD": null,
+  "features": {
+    "OBS_WINDOW": 20,
+    "FEATURES": [
+      { "type": "price", "field": "close", "normalize": false },
+      { "type": "price", "field": "volume", "normalize": false }
+    ]
+  },
+
+  "actions": {
+    "ALLOW_LONG": true,
+    "ALLOW_SHORT": true
+  },
+
+  "rewards": {
+    "REWARD_COMPONENTS": [
+      {
+        "type": "pnl",
+        "scale": 1000.0
+      },
+      {
+        "type": "cut_loss",
+        "threshold": -0.01,
+        "penalty_ratio": 2.0
+      },
+      {
+        "type": "overtrade_penalty",
+        "min_duration": 5,
+        "penalty_ratio": 1.0
+      }
+    ],
     "REWARD_SCALE": 1.0,
+    "CLIP_REWARD": null,
+    "NORM_REWARD": false,
+    "DEBUG_REWARDS": true
+  },
+
+  "training": {
+    "DEFAULT_INTERVAL": "5min",
     "TOTAL_TIMESTEPS": 1000000,
     "SAVE_FREQ": 100000,
     "EVAL_FREQ": 50000,
@@ -33,50 +59,20 @@
       "ent_coef": 0.2,
       "vf_coef": 0.5,
       "policy_kwargs": {
-        "net_arch": [
-          128,
-          128,
-          64
-        ],
+        "net_arch": [128, 128, 64],
         "activation_fn": "relu"
       }
-    },
-
-    "FEATURES": [
-      { "type": "price", "field": "close", "normalize": false },
-      { "type": "price", "field": "volume", "normalize": false }
-    ]
-,
-
-  "REWARD_COMPONENTS": [
-      {
-    "type": "pnl",
-    "scale": 1000.0
+    }
   },
-  {
-    "type": "cut_loss",
-    "threshold": -0.01,
-    "penalty_ratio": 2.0
-  },
-  {
-    "type": "overtrade_penalty",
-    "min_duration": 5,
-    "penalty_ratio": 1.0
-  }
-],
-"DEBUG_REWARDS": true
 
-
-  },
   "evaluation": {
-    "data_files": [
-      "data/NVDA_test.csv"
-    ],
+    "data_files": ["data/NVDA_test.csv"],
     "n_eval_episodes": 5,
     "deterministic": true,
     "render": false,
     "output_file": "eval/eval_results.json"
   },
+
   "logging": {
     "use_mlflow": true,
     "mlflow_uri": "http://localhost:5000",
@@ -84,6 +80,7 @@
     "log_params": true,
     "log_metrics": true
   },
+
   "metrics": {
     "enable": true,
     "track": [
@@ -95,5 +92,7 @@
       "avg_trade_duration",
       "r_multiple"
     ]
-  }
+  },
+
+  "DEBUG": true
 }
