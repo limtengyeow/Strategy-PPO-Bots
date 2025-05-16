@@ -11,7 +11,9 @@
     "DEFAULT_INTERVAL": "5min",
     "NORM_OBS": true,
     "NORM_TYPE": "returns",
-    "ALLOW_SHORT": false,
+    "ALLOW_SHORT": true,
+    "ALLOW_LONG": true,
+  
     "NORM_VOLUME_TYPE": "zscore",
 
     "NORM_REWARD": false,
@@ -39,16 +41,15 @@
         "activation_fn": "relu"
       }
     },
-    "FEATURES": [
-      {
-        "type": "price",
-        "field": "close",
-        "normalize": true
-      }
-    ],
 
-"REWARD_COMPONENTS": [
-  {
+    "FEATURES": [
+      { "type": "price", "field": "close", "normalize": false },
+      { "type": "price", "field": "volume", "normalize": false }
+    ]
+,
+
+  "REWARD_COMPONENTS": [
+      {
     "type": "pnl",
     "scale": 1000.0
   },

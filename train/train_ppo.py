@@ -68,6 +68,15 @@ for ticker, files in ticker_files.items():
     print(f"[Train] Using {selected_file} for {ticker}")
     df = pd.read_csv(file_path)
 
+    # ✅ DEBUG BLOCK: Check config and CSV contents
+    print("\n=== DEBUG START ===")
+    print("[DEBUG] CONFIG keys:", cfg.keys())
+    print("[DEBUG] FEATURES in config:", cfg.get("training", {}).get("FEATURES"))
+    print("[DEBUG] DataFrame columns:", df.columns.tolist())
+    print("[DEBUG] DataFrame dtypes:\n", df.dtypes)
+    print("[DEBUG] First few rows:\n", df.head())
+    print("=== DEBUG END ===\n")
+
     # Create environment
     env = DummyVecEnv([lambda: TradingEnv(df=df, config=cfg)])
 
@@ -77,7 +86,6 @@ for ticker, files in ticker_files.items():
     # Setup callbacks
     callback = CallbackList([
         PerformanceMetricsCallback(config_path="config.json", verbose=1)
-
     ])
 
     # Train

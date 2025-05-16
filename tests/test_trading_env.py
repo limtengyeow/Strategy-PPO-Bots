@@ -8,19 +8,23 @@ from env.trading_env import TradingEnv
 class TestTradingEnv(unittest.TestCase):
  
     def setUp(self):
-
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(base_dir, "..", "config.json")
         with open(config_path) as f:
             config = json.load(f)
 
         dummy_data = pd.DataFrame({
-            "close": np.linspace(100, 200, 100)
+            "close": np.random.rand(100) * 100,
+            "volume": np.random.randint(1000, 5000, 100)
         })
 
-        from env.trading_env import TradingEnv
+#        print("Dummy data columns:", dummy_data.columns)
+#        print("Dummy data types:\n", dummy_data.dtypes)
+#        print("Config features:", config["training"].get("FEATURES"))
+
         self.env = TradingEnv(config=config, df=dummy_data)
         self.env.reset()
+
 
 
     def test_reset_output_shape_and_type(self):
