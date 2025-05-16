@@ -48,10 +48,13 @@ class TradingEnv(gym.Env):
             shape=(feature_dim * self.obs_window,),
             dtype=np.float32
         )
-
+ 
         if self.debug:
-            with open("logs/env_debug.log", "a") as f:
-                f.write(f"[INIT] Features: {self.feature_columns}\n")
+            print(f"[OBS SPACE] Features selected: {self.feature_columns}")
+            print(f"[OBS SPACE] Feature count: {feature_dim}")
+            print(f"[OBS SPACE] Observation window: {self.obs_window}")
+            print(f"[OBS SPACE] Final shape: {self.observation_space.shape}")
+ 
 
     def reset(self):
         self.current_step = 0

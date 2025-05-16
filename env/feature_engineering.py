@@ -66,6 +66,64 @@ def init_feature_space(df, features_cfg, debug=False):
             elif debug:
                 print(f"[WARN] Skipping {field}: not found in DataFrame")
 
+        elif feat.get("type") == "indicator":
+            field = feat.get("field")         # "vwap", "sma", "ema"
+            source = feat.get("source", "close")
+            window = feat.get("window", 14)
+            normalize = feat.get("normalize", False)
+            method = feat.get("method", "zscore")
+
+            if field == "vwap":
+                if "vwap" not in df.columns:
+                    tp = (df["high"] + df["low"] + df["close"]) / 3
+                    df["vwap"] = (tp * df["volume"]).cumsum() / df["volume"].cumsum()
+                name = "vwap"
+
+            elif field == "sma":
+                name = f"sma_{window}_{source}"
+                df[name] = df[source].rolling(window).mean()
+
+            elif field == "ema":
+                name = f"ema_{window}_{source}"
+                df[name] = df[source].ewm(span=window, adjust=False).mean()
+
+            else:
+                raise ValueError(f"Unsupported indicator: {field}")
+
+            # Optional normalization for indicators
+            if normalize:
+                # Fill NaNs before normalization to prevent downstream errors
+                series = df[name].fillna(method="ffill").fillna(0)
+
+                if method == "zscore":
+                    mean = series.mean()
+                    std = series.std()
+                    df[name] = (series - mean) / (std + 1e-8)
+
+                elif method == "rolling_zscore":
+                    roll_mean = series.rolling(window=window, min_periods=1).mean()
+                    roll_std = series.rolling(window=window, min_periods=1).std()
+                    zscore = (series - roll_mean) / (roll_std + 1e-8)
+                    zscore.iloc[:window - 1] = 0
+
+                    if zscore.iloc[window - 1:].isnull().any():
+                        raise ValueError(f"[ERROR] {name} has NaNs after padding.")
+                    df[name] = zscore
+
+                elif method == "minmax":
+                    min_val = series.min()
+                    max_val = series.max()
+                    df[name] = (series - min_val) / (max_val - min_val + 1e-8)
+
+                else:
+                    raise ValueError(f"Unsupported normalization method: {method}")
+
+
+            selected_cols.append(name)
+
+            if debug:
+                print(f"[INDICATOR] {name} from {source}, normalized={normalize} method={method}")
+
     if not selected_cols:
         raise ValueError("No valid numeric features found in config.")
 

@@ -7,16 +7,18 @@
     "EVAL_DIR": "eval/"
   },
 
+ 
   "features": {
     "OBS_WINDOW": 20,
-
     "FEATURES": [
       { "type": "price", "field": "close", "normalize": true, "method": "zscore" },
-      { "type": "price", "field": "volume", "normalize": true, "method": "rolling_zscore" }
-   ]
-
-
+      { "type": "price", "field": "volume", "normalize": true, "method": "rolling_zscore", "window": 20 },
+      { "type": "indicator", "field": "vwap", "normalize": true, "method": "zscore" },
+      { "type": "indicator", "field": "sma", "source": "close", "window": 14, "normalize": true, "method": "rolling_zscore" },
+      { "type": "indicator", "field": "ema", "source": "volume", "window": 10, "normalize": true, "method": "minmax" }
+    ]
   },
+
 
   "actions": {
     "ALLOW_LONG": true,
@@ -97,5 +99,5 @@
     ]
   },
 
-  "DEBUG": true
+  "DEBUG": false
 }
