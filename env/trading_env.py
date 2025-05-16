@@ -106,4 +106,7 @@ class TradingEnv(gym.Env):
         return self.df.loc[self.current_step, self.feature_columns].values.astype(np.float32)
 
     def _get_observation(self):
-        return build_observation(self.obs_buffer)
+        obs = build_observation(self.obs_buffer)
+        if np.any(np.isnan(obs)):
+            raise ValueError("[NaN DETECTED] Observation contains NaN values. Check feature preprocessing.")
+        return obs

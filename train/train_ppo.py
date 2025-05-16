@@ -67,6 +67,27 @@ for ticker, files in ticker_files.items():
 
     print(f"[Train] Using {selected_file} for {ticker}")
     df = pd.read_csv(file_path)
+    
+    # === Data Debug Block ===
+    if args.test or cfg.get("DEBUG"):
+        print("\n=== DEBUG: Data Summary ===")
+        print("[Shape] Rows:", len(df), "Columns:", df.shape[1])
+        print("[Columns]", df.columns.tolist())
+    
+        print("\n[NaN counts per column]")
+        print(df.isnull().sum())
+
+        print("\n[First 30 rows]")
+        print(df.head(30))
+
+        # Show summary statistics for common features
+        feature_cols = ["close", "open", "high", "low", "volume"]
+        available = [col for col in feature_cols if col in df.columns]
+        if available:
+            print("\n[Stats for key features]")
+            print(df[available].describe())
+    
+        print("=== DEBUG END ===\n")
 
     # ✅ DEBUG BLOCK: Check config and CSV contents
     print("\n=== DEBUG START ===")

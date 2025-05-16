@@ -9,10 +9,13 @@
 
   "features": {
     "OBS_WINDOW": 20,
+
     "FEATURES": [
-      { "type": "price", "field": "close", "normalize": false },
-      { "type": "price", "field": "volume", "normalize": false }
-    ]
+      { "type": "price", "field": "close", "normalize": true, "method": "zscore" },
+      { "type": "price", "field": "volume", "normalize": true, "method": "rolling_zscore" }
+   ]
+
+
   },
 
   "actions": {
