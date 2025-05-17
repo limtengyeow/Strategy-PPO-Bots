@@ -3,6 +3,7 @@ gym==0.25.2
 pandas
 numpy
 matplotlib
+mlflow
 tensorboard
 cloudpickle
 polygon-api-client
