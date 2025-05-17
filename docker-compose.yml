@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  trainer:
+    build: .
+    container_name: ppo_trainer
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+    command: python train/train_ppo_standalone.py
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]  # Requires Docker >= 20.10 and NVIDIA container toolkit
