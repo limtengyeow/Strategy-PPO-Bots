@@ -1,0 +1,14 @@
+{
+  "name": "ppo-dev",
+  "build": { "dockerfile": "Dockerfile" },
+  "workspaceFolder": "/workspace/Strategy-PPO-Bots",
+  "runArgs": [
+    "--gpus", "all",
+    "-e", "CONFIG_PATH=/workspace/Strategy-PPO-Bots/config.json"
+  ],
+  "postCreateCommand": "pip install -r requirements.txt || true",
+  "extensions": [
+    "ms-python.python",
+    "ms-toolsai.jupyter"
+  ]
+}
