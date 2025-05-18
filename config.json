@@ -53,6 +53,7 @@
     "TOTAL_TIMESTEPS": 1000000,
     "SAVE_FREQ": 100000,
     "EVAL_FREQ": 50000,
+    "NUM_ENVS": 8,
     "USE_GPU": true,
     "SEED": 42,
     "RANDOM_START": true,

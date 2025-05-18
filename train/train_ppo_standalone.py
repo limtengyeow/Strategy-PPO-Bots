@@ -72,7 +72,8 @@ def main():
         print(f"[Train] Using {files_sorted[0]} for {ticker}")
 
         df = pd.read_csv(file_path)
-        NUM_ENVS = 4
+        NUM_ENVS = cfg["training"].get("NUM_ENVS", 4)
+        print(f"[Config] Launching {NUM_ENVS} parallel environments")
         env = SubprocVecEnv([make_env(df, cfg, SEED + i) for i in range(NUM_ENVS)])
 
         ppo_params = cfg["training"]["PPO_PARAMS"]
