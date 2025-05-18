@@ -11,7 +11,11 @@ fi
 
 echo "✅ Using config file: $CONFIG_FILE"
 
-# Run the Docker container with mounted config and environment variable
+# Build the Docker image (add this block)
+echo "🔧 Building Docker image 'ppo-trainer'..."
+docker build -t ppo-trainer .
+
+# Run the Docker container
 docker run --rm \
   -v "$PWD/$CONFIG_FILE:/app/config.json" \
   -e CONFIG_PATH=/app/config.json \
