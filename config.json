@@ -34,12 +34,12 @@
       {
         "type": "cut_loss",
         "threshold": -0.01,
-        "penalty_ratio": 2.0
+        "penalty_ratio": 2000
       },
       {
         "type": "overtrade_penalty",
         "min_duration": 5,
-        "penalty_ratio": 1.0
+        "penalty_ratio": 20
       }
     ],
     "REWARD_SCALE": 1.0,
@@ -48,6 +48,9 @@
     "DEBUG_REWARDS": true
   },
 
+
+
+  
   "training": {
     "DEFAULT_INTERVAL": "5min",
     "TOTAL_TIMESTEPS": 1000000,

@@ -113,7 +113,14 @@ for ticker, files in ticker_files.items():
     print("=== DEBUG END ===\n")
 
     # Create environment
-    env = DummyVecEnv([lambda: TradingEnv(df=df, config=cfg)])
+    def make_env():
+        def _init():
+            env = TradingEnv(df=df.copy(), config=cfg)
+            env.seed(SEED)
+            return env
+        return _init
+
+    env = DummyVecEnv([make_env()])
 
     # Create model
     model = PPO("MlpPolicy", env, seed=SEED, **ppo_params, verbose=1)

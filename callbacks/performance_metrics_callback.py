@@ -39,6 +39,31 @@ class PerformanceMetricsCallback(BaseCallback):
             if self.verbose > 0:
                 print(f"[Callback] Rollout finished at step {self.num_timesteps}, Avg Reward: {avg_reward:.4f}, Max Reward: {max_reward:.4f}")
 
+        try:
+            # Fetch trade logs from each environment
+            trade_logs = self.training_env.get_attr("trade_log")
+            trades = [t for log in trade_logs for t in log if "pnl" in t]
+
+            if trades:
+                df = pd.DataFrame(trades)
+                wins = df[df.pnl > 0]
+                losses = df[df.pnl <= 0]
+                total = len(df)
+
+                win_rate = len(wins) / total if total else 0
+                avg_win = np.mean(wins.pnl) * 100 if not wins.empty else 0
+                avg_loss = np.mean(losses.pnl) * 100 if not losses.empty else 0
+
+                print(f"📊 [Trade Stats] Trades: {total} | Win Rate: {win_rate:.2%} | Avg Win: {avg_win:.2f}% | Avg Loss: {avg_loss:.2f}%")
+
+                # Optional: clear the logs after reporting
+                for env in self.training_env.envs:
+                    env.trade_log.clear()
+
+        except Exception as e:
+            print(f"[Callback Warning] Could not extract trade stats: {e}")
+
+
     def compute_metrics(self, trades_df):
         if trades_df.empty:
             return {}
