@@ -25,29 +25,22 @@
     "ALLOW_SHORT": true
   },
 
-  "rewards": {
-    "REWARD_COMPONENTS": [
-      {
-        "type": "pnl",
-        "scale": 1000.0
-      },
-      {
-        "type": "cut_loss",
-        "threshold": -0.01,
-        "penalty_ratio": 2000
-      },
-      {
-        "type": "overtrade_penalty",
-        "min_duration": 5,
-        "penalty_ratio": 20
-      }
-    ],
-    "REWARD_SCALE": 1.0,
-    "CLIP_REWARD": null,
-    "NORM_REWARD": false,
-    "DEBUG_REWARDS": true
-  },
 
+  "rewards": {
+
+    "REWARD_COMPONENTS": [
+        { "type": "pnl", "scale": 100 },
+        { "type": "cut_loss", "threshold": -0.015, "penalty_ratio": 70 },
+        { "type": "overtrade_penalty", "min_duration": 3, "penalty_ratio": 5 },
+        { "type": "hold_bonus", "reward_per_step": 0.1 }
+
+    ],
+    "CLIP_REWARD": 100,
+    "REWARD_SCALE": 1.0,
+    "NORM_REWARD": false,
+    "DEBUG_REWARDS": false
+
+  },
 
 
   

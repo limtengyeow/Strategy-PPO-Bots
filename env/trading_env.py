@@ -87,27 +87,35 @@ class TradingEnv(gym.Env):
 
         return self._get_observation()
 
+
     def step(self, action):
         prev_price = self._get_price()
         take_action(self, action, prev_price)
         self.current_step += 1
         done = self.current_step >= len(self.df) - 1
 
-       # === Trade logging logic (before calculating reward) ===
-       # If position is closed due to opposite action, log the trade
+        # === Trade logging logic (before calculating reward) ===
         if self.position != 0:
             closing_action = (self.position == 1 and action == 2) or (self.position == -1 and action == 1)
             if closing_action:
                 current_price = self._get_price()
-                pnl = (current_price - self.entry_price) / self.entry_price if self.position == 1 \
-                      else (self.entry_price - current_price) / self.entry_price
+
+                # Safe PnL computation
+                if self.entry_price != 0:
+                    if self.position == 1:
+                        pnl = (current_price - self.entry_price) / self.entry_price
+                    else:
+                        pnl = (self.entry_price - current_price) / self.entry_price
+                else:
+                    pnl = 0.0
+
                 self.trade_log.append({
                     "pnl": pnl,
                     "duration": self.position_duration
-           })
-                self.entry_price = 0.0  # reset explicitly
-                self.position_duration = 0
+                })
 
+                self.entry_price = 0.0
+                self.position_duration = 0
 
         reward = calculate_reward(self)
         obs = self._get_features()
