@@ -3,6 +3,11 @@ import sys
 import json
 import pandas as pd
 import torch.nn as nn
+import random
+import numpy as np
+import torch
+
+
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import CallbackList
@@ -27,6 +32,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--test", action="store_true", help="Run in test mode")
 args, _ = parser.parse_known_args()
 cfg = load_config(test_mode=args.test)
+
+# === Set seed for reproducibility ===
+assert "SEED" in cfg["training"], "[Config] 'SEED' must be specified in training config."
+SEED = cfg["training"]["SEED"]
+print(f"[Seed] Using seed: {SEED}")
+
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
 
 # === Parameters ===
 data_dir = cfg["env"]["DATA_FOLDER"]
@@ -102,7 +116,8 @@ for ticker, files in ticker_files.items():
     env = DummyVecEnv([lambda: TradingEnv(df=df, config=cfg)])
 
     # Create model
-    model = PPO("MlpPolicy", env, **ppo_params, verbose=1)
+    model = PPO("MlpPolicy", env, seed=SEED, **ppo_params, verbose=1)
+
 
     # Setup callbacks
     callback = CallbackList([

@@ -1,4 +1,5 @@
 import gym
+import random
 import numpy as np
 import pandas as pd
 from gym import spaces
@@ -37,6 +38,14 @@ class TradingEnv(gym.Env):
         os.makedirs("logs", exist_ok=True)
         self._init_spaces()
 
+   # === Set seed for reproducibility ===
+    def seed(self, seed=None):
+        self._seed = seed
+        np.random.seed(seed)
+        random.seed(seed)
+        return [seed]
+
+
     def _init_spaces(self):
         self.df, self.feature_columns = init_feature_space(self.df, self.features_cfg, self.debug)
         feature_dim = len(self.feature_columns)
@@ -48,7 +57,7 @@ class TradingEnv(gym.Env):
             shape=(feature_dim * self.obs_window,),
             dtype=np.float32
         )
- 
+
         if self.debug:
             print(f"[OBS SPACE] Features selected: {self.feature_columns}")
             print(f"[OBS SPACE] Feature count: {feature_dim}")
@@ -57,7 +66,13 @@ class TradingEnv(gym.Env):
  
 
     def reset(self):
-        self.current_step = 0
+
+        if self.cfg.get("training", {}).get("RANDOM_START", False):
+            max_start = len(self.df) - self.obs_window - 1
+            self.current_step = np.random.randint(0, max_start)
+        else:
+            self.current_step = 0
+
         self.position = 0
         self.entry_price = 0.0
         self.obs_buffer.clear()
@@ -68,7 +83,8 @@ class TradingEnv(gym.Env):
             self.obs_buffer.append(obs)
         if self.debug:
             with open("logs/env_debug.log", "a") as f:
-                f.write("[RESET] Environment reset.\n")
+                f.write(f"[RESET] Environment reset. Start step: {self.current_step}\n")
+
         return self._get_observation()
 
     def step(self, action):

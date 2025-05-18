@@ -3,6 +3,10 @@ import json
 import torch
 import pandas as pd
 import multiprocessing
+import random
+import numpy as np
+import torch
+
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.callbacks import CallbackList
@@ -10,9 +14,11 @@ from env.trading_env import TradingEnv
 from callbacks.performance_metrics_callback import PerformanceMetricsCallback
 from train.train_ppo import load_config  # assumes this exists and loads config.json
 
-def make_env(df, cfg):
+def make_env(df, cfg, seed):
     def _init():
-        return TradingEnv(df=df.copy(), config=cfg)
+        env = TradingEnv(df=df.copy(), config=cfg)
+        env.seed(seed)
+        return env
     return _init
 
 def main():
@@ -22,6 +28,15 @@ def main():
     config_path = os.getenv("CONFIG_PATH", "config.json")
     print(f"[Config] Using configuration file: {config_path}")
     cfg = load_config(config_path)
+
+   # === Set seed for reproducibility ===
+    assert "SEED" in cfg["training"], "[Config] 'SEED' must be specified in training config."
+    SEED = cfg["training"]["SEED"]
+    print(f"[Seed] Using seed: {SEED}")
+    random.seed(SEED)
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+
 
     requested_gpu = cfg["training"].get("USE_GPU", False)
     device = torch.device("cuda" if requested_gpu and torch.cuda.is_available() else "cpu")
@@ -58,9 +73,11 @@ def main():
 
         df = pd.read_csv(file_path)
         NUM_ENVS = 4
-        env = SubprocVecEnv([make_env(df, cfg) for _ in range(NUM_ENVS)])
+        env = SubprocVecEnv([make_env(df, cfg, SEED + i) for i in range(NUM_ENVS)])
+
         ppo_params = cfg["training"]["PPO_PARAMS"]
-        model = PPO("MlpPolicy", env, **ppo_params, verbose=1)
+        model = PPO("MlpPolicy", env, seed=SEED, **ppo_params, verbose=1)
+
         model.policy.to(device)
 
         callback = CallbackList([

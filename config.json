@@ -53,6 +53,9 @@
     "TOTAL_TIMESTEPS": 1000000,
     "SAVE_FREQ": 100000,
     "EVAL_FREQ": 50000,
+    "USE_GPU": true,
+    "SEED": 42,
+    "RANDOM_START": true,
     "PPO_PARAMS": {
       "learning_rate": 0.0003,
       "n_steps": 2048,
