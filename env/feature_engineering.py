@@ -126,5 +126,8 @@ def init_feature_space(df, features_cfg, debug=False):
 
     if not selected_cols:
         raise ValueError("No valid numeric features found in config.")
+    # Drop rows with any NaNs in selected feature columns
+    df = df.dropna(subset=selected_cols).reset_index(drop=True)
+
 
     return df, selected_cols

@@ -4,7 +4,10 @@
     "DATA_FOLDER": "data/",
     "TENSORBOARD_LOG": "tb_logs/",
     "MODEL_DIR": "models/",
-    "EVAL_DIR": "eval/"
+    "EVAL_DIR": "eval/",
+    "EPISODE_DURATION_DAYS": 10,
+    "BARS_PER_DAY": 78
+
   },
 
  

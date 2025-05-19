@@ -17,6 +17,12 @@ class TradingEnv(gym.Env):
             raise ValueError("DataFrame 'df' must be provided to TradingEnv.")
         self.cfg = config or {}
         self.df = df.copy()
+
+        self.episode_duration_days = self.cfg["env"].get("EPISODE_DURATION_DAYS", 10)
+        self.bars_per_day = self.cfg["env"].get("BARS_PER_DAY", 78)
+        self.max_episode_steps = self.episode_duration_days * self.bars_per_day
+        self.episode_steps = 0
+
         self.current_step = 0
         self.position = 0  # 0 = flat, 1 = long, -1 = short
         self.entry_price = 0.0
@@ -37,6 +43,12 @@ class TradingEnv(gym.Env):
 
         os.makedirs("logs", exist_ok=True)
         self._init_spaces()
+
+        # Check for NaNs in features after preprocessing
+        if self.df[self.feature_columns].isnull().values.any():
+            raise ValueError("[INIT] Feature DataFrame contains NaNs. Check feature engineering.")
+
+
 
    # === Set seed for reproducibility ===
     def seed(self, seed=None):
@@ -67,11 +79,19 @@ class TradingEnv(gym.Env):
 
     def reset(self):
 
+ 
         if self.cfg.get("training", {}).get("RANDOM_START", False):
-            max_start = len(self.df) - self.obs_window - 1
+            max_start = len(self.df) - self.obs_window - self.max_episode_steps - 1
+            if max_start <= 0:
+                raise ValueError(f"[RESET] Dataset too small for RANDOM_START. max_start={max_start}")
             self.current_step = np.random.randint(0, max_start)
+
+
         else:
-            self.current_step = 0
+                self.current_step = 0
+                self.episode_steps = 0
+                self.cumulative_pnl = 0.0  # If you're using it
+
 
         self.position = 0
         self.entry_price = 0.0
@@ -87,20 +107,20 @@ class TradingEnv(gym.Env):
 
         return self._get_observation()
 
-
     def step(self, action):
         prev_price = self._get_price()
         take_action(self, action, prev_price)
         self.current_step += 1
-        done = self.current_step >= len(self.df) - 1
+        self.episode_steps += 1
+
+        # --- End episode after fixed number of steps or end of data ---
+        done = self.episode_steps >= self.max_episode_steps or self.current_step >= len(self.df) - 1
 
         # === Trade logging logic (before calculating reward) ===
         if self.position != 0:
             closing_action = (self.position == 1 and action == 2) or (self.position == -1 and action == 1)
             if closing_action:
                 current_price = self._get_price()
-
-                # Safe PnL computation
                 if self.entry_price != 0:
                     if self.position == 1:
                         pnl = (current_price - self.entry_price) / self.entry_price
@@ -113,14 +133,31 @@ class TradingEnv(gym.Env):
                     "pnl": pnl,
                     "duration": self.position_duration
                 })
-
                 self.entry_price = 0.0
                 self.position_duration = 0
 
+        # === Reward ===
         reward = calculate_reward(self)
+
+        # === Force-close open position at episode end ===
+        if done and self.position != 0:
+            if self.entry_price != 0:
+                final_pnl = (self._get_price() - self.entry_price) / self.entry_price
+                if self.position == -1:
+                    final_pnl *= -1
+                reward += final_pnl * self.rewards_cfg.get("REWARD_COMPONENTS", [{}])[0].get("scale", 100)
+            else:
+                if self.debug:
+                    with open("logs/env_debug.log", "a") as f:
+                        f.write(f"[WARNING] Entry price is zero at episode end. Skipping final reward calc.\n")
+
+
+            self.position = 0
+            self.entry_price = 0.0
+
+        # === Observation and bookkeeping ===
         obs = self._get_features()
         self.obs_buffer.append(obs)
-
         if self.position != 0:
             self.position_duration += 1
 
@@ -140,8 +177,12 @@ class TradingEnv(gym.Env):
                     f"[STEP] step={self.current_step}, action={action}, reward={reward:.5f}, pos={self.position}, price={self._get_price():.2f}, duration={self.position_duration}\n"
                 )
 
+        if done:
+            print(f"[EPISODE END] Steps: {self.episode_steps}, Reward: {reward:.2f}")
+
         return self._get_observation(), reward, done, info
 
+    
     def _get_price(self):
         return self.df.iloc[self.current_step][self.price_field]
 
