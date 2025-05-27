@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/32eee606a0f0485bb3783124fe2c01ee/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 32eee606a0f0485bb3783124fe2c01ee
+run_name: capable-auk-759
+run_uuid: 32eee606a0f0485bb3783124fe2c01ee
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747647903988
+status: 1
+tags: []
+user_id: root

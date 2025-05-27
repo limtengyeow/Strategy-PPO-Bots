@@ -1,0 +1,22 @@
+[33m10031fc[m[33m ([m[1;36mHEAD -> [m[1;32mfeat/expand-observation-features[m[33m, [m[1;31morigin/feat/expand-observation-features[m[33m)[m Fix: Reward logic, feature normalization, NaN handling; improved environment stability"
+[33m53789e1[m Fix reward calculation: enabled pnl, cut_loss, overtrade_penalty, and hold_bonus components"
+[33m4bd257d[m Refactor env creation using make_env() for trade log access and proper seeding
+[33md0b1daa[m feat: support NUM_ENVS from config
+[33m2055519[m feat: support reproducible training and random start in TradingEnv
+[33m0b99127[m feat(script): add docker build and config check to run_with_config.sh
+[33m274a275[m feat(devcontainer): add Jupyter support and forward port 8888
+[33md38f799[m Packages for Docker
+[33m6884daa[m feat: add standalone PPO trainer with Docker and config-based launcher
+[33maede7a0[m Update generate_data.py with Polygon.io support
+[33m7148d41[m Add exploratory notebook and update requirements
+[33m19738a4[m stable version
+[33macf788e[m Stable checkpoint: added and validated feature normalization including rolling z-score
+[33m84f0000[m[33m ([m[1;31morigin/dev[m[33m, [m[1;32mdev[m[33m)[m refactored trading_env to submodules
+[33m0fc703a[m[33m ([m[1;33mtag: v1.0-test[m[33m, [m[1;31morigin/trading_env[m[33m, [m[1;31morigin/test[m[33m, [m[1;32mtrading_env[m[33m, [m[1;32mtest[m[33m)[m Stable PPO training loop with hardened TradingEnv, config-driven feature selection, and CSV ingestion debugged
+[33mec63500[m basic trading env that passes all the test
+[33md28f43d[m partial working trading_env
+[33m6c954e6[m add generate data and plotting
+[33ma31d8f5[m Refactored TradingEnv reward system: clean implementation with pnl-based scaling, cut loss penalty, and overtrade penalty support. Normalized reward logic for consistency and debug visibility.
+[33maf1247d[m Implement config-aware PPO training loop with dynamic activation and metrics callback
+[33m1ca599d[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m add generate data and plotting
+[33m39f5215[m Initial commit

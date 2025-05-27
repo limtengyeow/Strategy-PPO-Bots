@@ -1,0 +1,17 @@
+# Core ML/AI Libraries
+numpy
+pandas
+matplotlib
+scikit-learn
+torch
+tensorflow
+gym
+stable-baselines3
+mlflow
+
+# Notebooks-specific Requirements
+ipykernel==6.29.5
+nbconvert==7.16.6
+nbformat==5.10.4
+jupyterlab
+notebook

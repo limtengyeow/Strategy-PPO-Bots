@@ -1,20 +1,68 @@
 {
-  "name": "ppo-dev",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
-  "workspaceFolder": "/workspace/Strategy-PPO-Bots",
-  "runArgs": [
-    "--gpus", "all",
-    "-e", "CONFIG_PATH=/workspace/Strategy-PPO-Bots/config.json"
-  ],
-  "postCreateCommand": "pip install -r requirements.txt && pip install jupyter ipykernel notebook",
-  "forwardPorts": [8888],
-  "extensions": [
-    "ms-python.python",
-    "ms-toolsai.jupyter"
-  ],
-  "settings": {
-    "terminal.integrated.defaultProfile.linux": "bash"
-  }
+    "build": {
+        "context": "..",
+        "dockerfile": "Dockerfile"
+    },
+    "shutdownAction": "none",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": true,
+            "configureZshAsDefaultShell": true,
+            "installOhMyZsh": true,
+            "upgradePackages": false,
+            "username": "devuser"
+        }
+    },   
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "codezombiech.gitignore",
+                "DavidAnson.vscode-markdownlint",
+                "donjayamanne.githistory",
+                "donjayamanne.python-environment-manager",
+                "donjayamanne.vscode-default-python-kernel",
+                "eamodio.gitlens",
+                "GitHub.copilot",
+                "github.copilot-chat",
+                "Gruntfuggly.todo-tree",
+                "ionutvmi.path-autocomplete",
+                "marchiore.csvtomarkdown",
+                "mechatroner.rainbow-csv",
+                "ms-azure-devops.azure-pipelines",
+                "ms-python.mypy-type-checker",
+                "ms-python.python",
+                "ms-toolsai.jupyter",
+                "ms-vsliveshare.vsliveshare",
+                "njpwerner.autodocstring",
+                "redhat.vscode-yaml",
+                "streetsidesoftware.code-spell-checker",
+                "timonwong.shellcheck",
+                "charliermarsh.ruff",
+                "grapecity.gc-excelviewer"
+            ],
+            "settings": {
+                "autoDocstring.docstringFormat": "google",
+                "mypy-type-checker.importStrategy": "fromEnvironment",
+                "python.testing.pytestEnabled": true,
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "jupyter.jupyterServerType": "local",
+                "jupyter.notebookFileRoot": "${workspaceFolder}",
+                "jupyter.kernelsFilter": ["Python 3.11.12"],
+                "[python]": {
+                    "editor.codeActionsOnSave": {
+                        "source.fixAll": "explicit",
+                        "source.organizeImports": "explicit"
+                    },
+                    "editor.defaultFormatter": "charliermarsh.ruff",
+                    "editor.formatOnSave": true,
+                    "files.trimTrailingWhitespace": true
+                },
+                "notebook.formatOnSave.enabled": true,
+                "notebook.codeActionsOnSave": {
+                    "notebook.source.fixAll": "explicit",
+                    "notebook.source.organizeImports": "explicit"
+                }
+            }
+        }
+    }
 }
