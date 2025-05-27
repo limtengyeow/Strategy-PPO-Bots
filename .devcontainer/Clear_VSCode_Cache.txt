@@ -1,0 +1,44 @@
+Clear Cache Guide for VS Code & Docker
+
+Caches in VS Code
+
+Type                | Path (MacOS/Linux)                                      | Path (Windows)                                             | Notes                      
+------------------- | ------------------------------------------------------ | ---------------------------------------------------------- | -------------------------- 
+Global Storage      | ~/.config/Code/                                         | %APPDATA%\Code\                                           | Extensions, settings, state
+Workspace Storage   | Inside .vscode/ in your project                        | Same                                                        | Per-project settings       
+Dev Containers Cache| ~/.vscode/extensions/ms-vscode-remote.remote-containers/data/ | %USERPROFILE%\.vscode\extensions\ms-vscode-remote-...    | Containers, images, state  
+Docker Layer Cache  | Docker system                                          | Docker system                                               | Layers, images, volumes    
+Pre-compiled JS Cache | ~/.config/Code/CachedData/                            | %APPDATA%\Code\CachedData\                               | JS/TS precompiled cache    
+Extension Cache     | ~/.vscode/extensions/                                   | %USERPROFILE%\.vscode\extensions\                        | Installed extensions       
+Electron Cache      | ~/.config/Code/Cache/                                   | %APPDATA%\Code\Cache/                                     | Browser-like cache         
+
+---------------------------------------------------------------
+
+How to Clear Caches
+
+Manual Cleanup
+--------------
+1. Close VS Code  
+2. Run:
+
+    rm -rf ~/.config/Code/Cache/
+    rm -rf ~/.config/Code/CachedData/
+    rm -rf ~/.config/Code/User/workspaceStorage/
+    rm -rf ~/.config/Code/User/globalStorage/
+    rm -rf ~/.vscode/extensions/ms-vscode-remote.remote-containers/data/
+    docker system prune -a  # optional: cleans Docker caches
+
+
+Docker Cleanup Commands
+
+Action                        | Command                                        
+---------------------------- | -------------------------------------------- 
+Remove All Containers        | docker rm -f $(docker ps -aq)               
+Remove All Images            | docker rmi -f $(docker images -aq)          
+Remove All Volumes           | docker volume prune -f                      
+Remove All Networks          | docker network prune -f                     
+Remove All Build Caches      | docker builder prune -af                    
+Full System Prune (Nuclear)  | docker system prune -af --volumes           
+
+---------------------------------------------------------------
+
