@@ -12,7 +12,7 @@
             "upgradePackages": false,
             "username": "devuser"
         }
-    },   
+    },
     "customizations": {
         "vscode": {
             "extensions": [
