@@ -7,17 +7,22 @@
     "EVAL_DIR": "eval/"
   },
   "features": {
-    "OBS_WINDOW": 20,
+    "OBS_WINDOW": 30,
     "DEBUG_FEATURES": true,
     "FEATURES": [
       { "type": "price", "field": "close", "normalize": true, "method": "zscore" },
-      { "type": "price", "field": "volume", "normalize": true, "method": "rolling_zscore", "window": 20 },
+      { "type": "price", "field": "volume", "normalize": true, "method": "rolling_zscore", "window": 30 },
       { "type": "indicator", "field": "vwap", "normalize": true, "method": "zscore" },
-      { "type": "indicator", "field": "sma", "source": "close", "window": 14, "normalize": true, "method": "rolling_zscore" },
-      { "type": "indicator", "field": "ema", "source": "volume", "window": 10, "normalize": true, "method": "minmax" },
+      { "type": "indicator", "field": "ema", "source": "close", "window": 10, "normalize": true, "method": "zscore" },
+      { "type": "indicator", "field": "ema", "source": "close", "window": 20, "normalize": true, "method": "zscore" },
       { "type": "indicator", "field": "rsi", "source": "close", "window": 14, "normalize": true, "method": "zscore" },
-      { "type": "indicator", "field": "atr", "window": 14, "normalize": true, "method": "zscore" },
-      { "type": "indicator", "field": "ema", "source": "close", "window": 20, "normalize": true, "method": "zscore" }
+      { "type": "indicator", "field": "atr", "window": 14, "normalize": true, "method": "zscore" }
+    ],
+    "DAILY_FEATURES": [
+      { "field": "ema", "source": "close", "window": 10 },
+      { "field": "ema", "source": "close", "window": 21 },
+      { "field": "sma", "source": "close", "window": 50 },
+      { "field": "sma", "source": "close", "window": 200 }
     ]
   },
   "actions": {
@@ -26,14 +31,14 @@
   },
   "rewards": {
     "REWARD_COMPONENTS": [
-      { "type": "pnl", "scale": 1500.0 },
+      { "type": "pnl", "scale": 500.0 },
       { "type": "cut_loss", "threshold": -0.005, "penalty_ratio": 3.0 },
-      { "type": "overtrade_penalty", "min_duration": 5, "penalty_ratio": 1.5 },
-      { "type": "trend_bonus", "bonus_per_step": 0.001 },
-      { "type": "breakout_reward", "window": 50, "bonus": 0.0075 },
-      { "type": "volatility_penalty", "window": 20, "threshold": 0.03, "penalty": 0.002 },
-      { "type": "profit_target_bonus", "target_pct": 0.04, "bonus": 0.012 },
-      { "type": "time_penalty", "penalty_per_step": 0.0005 }
+      { "type": "overtrade_penalty", "min_duration": 5, "penalty_ratio": 2.0 },
+      { "type": "trend_bonus", "bonus_per_step": 0.005 },
+      { "type": "breakout_reward", "window": 50, "bonus": 0.01 },
+      { "type": "volatility_penalty", "window": 20, "threshold": 0.02, "penalty": 0.01 },
+      { "type": "profit_target_bonus", "target_pct": 0.03, "bonus": 0.02 },
+      { "type": "time_penalty", "penalty_per_step": 0.001 }
     ],
     "REWARD_SCALE": 1.0,
     "CLIP_REWARD": null,
@@ -42,17 +47,17 @@
   },
   "training": {
     "DEFAULT_INTERVAL": "5min",
-    "TOTAL_TIMESTEPS": 100000,
-    "SAVE_FREQ": 100000,
-    "EVAL_FREQ": 50000,
+    "TOTAL_TIMESTEPS": 500000,
+    "SAVE_FREQ": 50000,
+    "EVAL_FREQ": 25000,
     "NUM_ENVS": 8,
     "USE_GPU": true,
     "SEED": 42,
     "RANDOM_START": true,
     "PPO_PARAMS": {
-      "learning_rate": 0.0002,
-      "n_steps": 4096,
-      "batch_size": 64,
+      "learning_rate": 0.0003,
+      "n_steps": 8192,
+      "batch_size": 128,
       "n_epochs": 10,
       "gamma": 0.99,
       "gae_lambda": 0.95,
@@ -60,13 +65,15 @@
       "ent_coef": 0.2,
       "vf_coef": 0.5,
       "policy_kwargs": {
-        "net_arch": [128, 128, 64],
-        "activation_fn": "relu"
+        "net_arch": [256, 128, 64],
+        "activation_fn": "<class 'torch.nn.modules.activation.ReLU'>"
       }
     }
   },
   "evaluation": {
-    "data_files": [ "data/NVDA_test.csv" ],
+    "data_files": [
+      "data/NVDA_test.csv"
+    ],
     "n_eval_episodes": 5,
     "deterministic": true,
     "render": false,

@@ -4,15 +4,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# Set up the log file path relative to the current working directory (works in both Jupyter and terminal)
+# Set up the log file path relative to the current working directory
 LOG_FILE = Path.cwd() / "logs" / "feature_debug.log"
 LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 
 def log_feature_debug(message, debug):
-    """
-    Helper function to write debug messages to the log file if debug mode is enabled.
-    """
     if debug:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with LOG_FILE.open("a") as f:
@@ -20,29 +17,25 @@ def log_feature_debug(message, debug):
 
 
 def init_feature_space(df, features_cfg, debug=False):
-    """
-    Processes the input DataFrame to generate features for the trading model.
-    Supports price features and technical indicators like SMA, EMA, RSI, ATR, and VWAP.
-
-    Args:
-        df (pd.DataFrame): Input DataFrame with raw OHLCV data.
-        features_cfg (dict): Configuration dictionary with feature specifications (from config.json).
-        debug (bool): If True, logs detailed feature creation steps to logs/feature_debug.log.
-
-    Returns:
-        pd.DataFrame: The DataFrame with new features added.
-        list: List of feature column names used in the model.
-    """
     features = features_cfg.get("FEATURES", [])
-    selected_cols = []  # List of feature column names for model input
+    daily_features = features_cfg.get("DAILY_FEATURES", [])
+    selected_cols = []
 
     log_feature_debug("=== Feature Engineering Started ===", debug)
 
-    # Process each feature configuration
+    if "timestamp" in df.columns:
+        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+
+    raw_price_fields = [
+        feat.get("field") for feat in features if feat.get("type") == "price"
+    ]
+    price_cols_backup = (
+        df[raw_price_fields].copy() if raw_price_fields else pd.DataFrame()
+    )
+
     for feat in features:
+        field = feat.get("field")
         if feat.get("type") == "price":
-            # Handle raw price data (e.g., close, volume)
-            field = feat.get("field")
             normalize = feat.get("normalize", False)
             method = feat.get("method", "zscore")
 
@@ -52,52 +45,22 @@ def init_feature_space(df, features_cfg, debug=False):
                     if normalize:
                         try:
                             if method == "zscore":
-                                mean = series.mean()
-                                std = series.std()
-                                df[field] = (series - mean) / (std + 1e-8)
-                                log_feature_debug(
-                                    f"[NORMALIZE:zscore] {field} mean={mean:.4f}, std={std:.4f}",
-                                    debug,
+                                df[field] = (series - series.mean()) / (
+                                    series.std() + 1e-8
                                 )
                             elif method == "rolling_zscore":
                                 window = feat.get("window", 20)
-                                roll_mean = series.rolling(
-                                    window=window, min_periods=1
-                                ).mean()
-                                roll_std = series.rolling(
-                                    window=window, min_periods=1
-                                ).std()
-                                zscore = (series - roll_mean) / (roll_std + 1e-8)
-                                zscore.iloc[: window - 1] = 0
-                                if zscore.iloc[window - 1 :].isnull().any():
-                                    raise ValueError(
-                                        f"{field} has NaNs after initial padding."
-                                    )
-                                df[field] = zscore
-                                log_feature_debug(
-                                    f"[NORMALIZE:rolling_zscore] {field} window={window}",
-                                    debug,
-                                )
+                                roll_mean = series.rolling(window, min_periods=1).mean()
+                                roll_std = series.rolling(window, min_periods=1).std()
+                                df[field] = (series - roll_mean) / (roll_std + 1e-8)
                             elif method == "minmax":
-                                min_val = series.min()
-                                max_val = series.max()
-                                df[field] = (series - min_val) / (
-                                    max_val - min_val + 1e-8
-                                )
-                                log_feature_debug(
-                                    f"[NORMALIZE:minmax] {field} min={min_val:.4f}, max={max_val:.4f}",
-                                    debug,
+                                df[field] = (series - series.min()) / (
+                                    series.max() - series.min() + 1e-8
                                 )
                             elif method == "log_return":
                                 df[field] = np.log(series / series.shift(1)).fillna(0)
-                                log_feature_debug(
-                                    f"[NORMALIZE:log_return] {field}", debug
-                                )
                             elif method == "percent_change":
                                 df[field] = series.pct_change().fillna(0)
-                                log_feature_debug(
-                                    f"[NORMALIZE:percent_change] {field}", debug
-                                )
                             else:
                                 raise ValueError(
                                     f"Unsupported normalization method: {method}"
@@ -107,25 +70,14 @@ def init_feature_space(df, features_cfg, debug=False):
                                 f"[ERROR] {field} normalization failed: {e}", debug
                             )
                     selected_cols.append(field)
-                else:
-                    log_feature_debug(
-                        f"[WARN] Skipping {field}: not numeric or all NaN", debug
-                    )
-            else:
-                log_feature_debug(
-                    f"[WARN] Skipping {field}: not found in DataFrame", debug
-                )
 
         elif feat.get("type") == "indicator":
-            # Handle technical indicators like SMA, EMA, RSI, ATR, VWAP
-            field = feat.get("field")
             source = feat.get("source", "close")
             window = feat.get("window", 14)
             normalize = feat.get("normalize", False)
             method = feat.get("method", "zscore")
 
             try:
-                # Compute the requested indicator
                 if field == "vwap":
                     if "vwap" not in df.columns:
                         tp = (df["high"] + df["low"] + df["close"]) / 3
@@ -133,68 +85,116 @@ def init_feature_space(df, features_cfg, debug=False):
                             "volume"
                         ].cumsum()
                     name = "vwap"
-                elif field == "sma":
-                    name = f"sma_{window}_{source}"
-                    df[name] = df[source].rolling(window).mean()
                 elif field == "ema":
                     name = f"ema_{window}_{source}"
                     df[name] = df[source].ewm(span=window, adjust=False).mean()
                 elif field == "rsi":
                     delta = df[source].diff()
-                    gain = delta.where(delta > 0, 0).rolling(window=window).mean()
-                    loss = -delta.where(delta < 0, 0).rolling(window=window).mean()
+                    gain = delta.where(delta > 0, 0).rolling(window).mean()
+                    loss = -delta.where(delta < 0, 0).rolling(window).mean()
                     rs = gain / (loss + 1e-8)
-                    df[f"rsi_{window}_{source}"] = 100 - (100 / (1 + rs))
-                    name = f"rsi_{window}_{source}"
+                    df[name := f"rsi_{window}_{source}"] = 100 - (100 / (1 + rs))
                 elif field == "atr":
-                    high_low = df["high"] - df["low"]
-                    high_close = np.abs(df["high"] - df["close"].shift(1))
-                    low_close = np.abs(df["low"] - df["close"].shift(1))
-                    tr = (
-                        high_low.to_frame("hl")
-                        .join(high_close.to_frame("hc"))
-                        .join(low_close.to_frame("lc"))
-                        .max(axis=1)
-                    )
-                    df[f"atr_{window}"] = tr.rolling(window).mean()
-                    name = f"atr_{window}"
+                    tr = pd.concat(
+                        [
+                            df["high"] - df["low"],
+                            abs(df["high"] - df["close"].shift()),
+                            abs(df["low"] - df["close"].shift()),
+                        ],
+                        axis=1,
+                    ).max(axis=1)
+                    df[name := f"atr_{window}"] = tr.rolling(window).mean()
                 else:
                     raise ValueError(f"Unsupported indicator: {field}")
 
-                # Apply normalization to indicator if configured
                 if normalize:
-                    series = df[name].fillna(method="ffill").fillna(0)
+                    series = df[name].ffill().fillna(0)
                     if method == "zscore":
-                        mean = series.mean()
-                        std = series.std()
-                        df[name] = (series - mean) / (std + 1e-8)
+                        df[name] = (series - series.mean()) / (series.std() + 1e-8)
                     elif method == "rolling_zscore":
-                        roll_mean = series.rolling(window=window, min_periods=1).mean()
-                        roll_std = series.rolling(window=window, min_periods=1).std()
-                        zscore = (series - roll_mean) / (roll_std + 1e-8)
-                        zscore.iloc[: window - 1] = 0
-                        if zscore.iloc[window - 1 :].isnull().any():
-                            raise ValueError(f"{name} has NaNs after padding.")
-                        df[name] = zscore
+                        roll_mean = series.rolling(window, min_periods=1).mean()
+                        roll_std = series.rolling(window, min_periods=1).std()
+                        df[name] = (series - roll_mean) / (roll_std + 1e-8)
                     elif method == "minmax":
-                        min_val = series.min()
-                        max_val = series.max()
-                        df[name] = (series - min_val) / (max_val - min_val + 1e-8)
+                        df[name] = (series - series.min()) / (
+                            series.max() - series.min() + 1e-8
+                        )
                     else:
                         raise ValueError(f"Unsupported normalization method: {method}")
 
                 selected_cols.append(name)
-                log_feature_debug(
-                    f"[INDICATOR] {name} from {source}, normalized={normalize} method={method}",
-                    debug,
-                )
 
             except Exception as e:
                 log_feature_debug(
                     f"[ERROR] {field} feature creation failed: {e}", debug
                 )
 
-    # Final check: make sure we have features generated
+    df_daily = (
+        df.resample("1D", on="timestamp")
+        .agg(
+            {
+                "open": "first",
+                "high": "max",
+                "low": "min",
+                "close": "last",
+                "volume": "sum",
+            }
+        )
+        .dropna()
+    )
+
+    for dfeat in daily_features:
+        field = dfeat.get("field")
+        source = dfeat.get("source", "close")
+        window = dfeat.get("window", 14)
+
+        try:
+            if field == "ema":
+                df_daily[f"daily_ema_{window}"] = (
+                    df_daily[source].ewm(span=window, adjust=False).mean().ffill()
+                )
+            elif field == "sma":
+                df_daily[f"daily_sma_{window}"] = (
+                    df_daily[source].rolling(window).mean().ffill()
+                )
+            else:
+                raise ValueError(f"Unsupported daily indicator: {field}")
+            log_feature_debug(f"[DAILY] Added {field}({window}) on {source}", debug)
+        except Exception as e:
+            log_feature_debug(
+                f"[ERROR] {field} daily feature creation failed: {e}", debug
+            )
+
+    df = pd.merge_asof(
+        df.sort_values("timestamp"),
+        df_daily.sort_values("timestamp"),
+        on="timestamp",
+        direction="backward",
+    )
+
+    for field in raw_price_fields:
+        if field not in df.columns:
+            df[field] = price_cols_backup[field]
+            log_feature_debug(
+                f"[FIX] Restored raw price field '{field}' after merge", debug
+            )
+        df[field] = df[field].ffill().bfill().fillna(0)
+        log_feature_debug(
+            f"[FIX] Filled NaNs in raw price field '{field}' after restore", debug
+        )
+
+    df = df.ffill().bfill().fillna(0)
+    log_feature_debug("[FINAL] Filled any remaining NaNs globally in df", debug)
+
+    selected_cols += [col for col in df.columns if col.startswith("daily_")]
+
+    for field in raw_price_fields:
+        if field not in selected_cols and field in df.columns:
+            selected_cols.append(field)
+            log_feature_debug(
+                f"[FIX] Added raw price field '{field}' to selected_cols", debug
+            )
+
     if not selected_cols:
         log_feature_debug("[ERROR] No valid numeric features found in config.", debug)
         raise ValueError("No valid numeric features found in config.")
