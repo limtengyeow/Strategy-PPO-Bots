@@ -23,9 +23,18 @@ class TradingEnv(gym.Env):
         self.position = 0  # 0 = flat, 1 = long, -1 = short
         self.entry_price = 0.0
 
+        # Configurations for features, actions, and rewards
         self.features_cfg = self.cfg.get("features", {})
         self.actions_cfg = self.cfg.get("actions", {})
         self.rewards_cfg = self.cfg.get("rewards", {})
+
+        # Read debug flags from config
+        self.env_debug = self.cfg.get(
+            "DEBUG", False
+        )  # Root-level DEBUG flag controls env logs
+        self.feature_debug = self.features_cfg.get(
+            "DEBUG_FEATURES", False
+        )  # Features debug flag
 
         self.allow_long = self.actions_cfg.get("ALLOW_LONG", True)
         self.allow_short = self.actions_cfg.get("ALLOW_SHORT", False)
@@ -33,9 +42,7 @@ class TradingEnv(gym.Env):
         self.price_field = self.features_cfg.get("price_field", "close")
 
         self.obs_buffer = deque(maxlen=self.obs_window)
-        self.debug = self.features_cfg.get("DEBUG_FEATURES", False)
-
-        self.trade_log = []
+        self.trade_log = []  # Placeholder, not used yet
         self.position_duration = 0
 
         os.makedirs("logs", exist_ok=True)
@@ -49,8 +56,9 @@ class TradingEnv(gym.Env):
         return [seed]
 
     def _init_spaces(self):
+        # Initialize features and observation space
         self.df, self.feature_columns = init_feature_space(
-            self.df, self.features_cfg, self.debug
+            self.df, self.features_cfg, self.feature_debug
         )
         feature_dim = len(self.feature_columns)
 
@@ -62,13 +70,14 @@ class TradingEnv(gym.Env):
             dtype=np.float32,
         )
 
-        if self.debug:
-            print(f"[OBS SPACE] Features selected: {self.feature_columns}")
-            print(f"[OBS SPACE] Feature count: {feature_dim}")
-            print(f"[OBS SPACE] Observation window: {self.obs_window}")
-            print(f"[OBS SPACE] Final shape: {self.observation_space.shape}")
+        if self.env_debug:
+            with open("logs/env_debug.log", "a") as f:
+                f.write(
+                    f"[INIT] Features selected: {self.feature_columns}, Feature count: {feature_dim}, Obs window: {self.obs_window}\n"
+                )
 
     def reset(self):
+        # Reset environment state
         if self.cfg.get("training", {}).get("RANDOM_START", False):
             max_start = len(self.df) - self.obs_window - 1
             self.current_step = np.random.randint(0, max_start)
@@ -83,7 +92,8 @@ class TradingEnv(gym.Env):
         obs = self._get_features()
         for _ in range(self.obs_window):
             self.obs_buffer.append(obs)
-        if self.debug:
+
+        if self.env_debug:
             with open("logs/env_debug.log", "a") as f:
                 f.write(f"[RESET] Environment reset. Start step: {self.current_step}\n")
 
@@ -109,13 +119,13 @@ class TradingEnv(gym.Env):
             "entry_price": self.entry_price,
             "price": self._get_price(),
             "duration": self.position_duration,
-            "trade_log": list(self.trade_log),
+            "trade_log": list(self.trade_log),  # Placeholder
         }
 
-        if self.debug:
+        if self.env_debug:
             with open("logs/env_debug.log", "a") as f:
                 f.write(
-                    f"[STEP] step={self.current_step}, action={action}, reward={reward:.5f}, pos={self.position}, price={self._get_price():.2f}, duration={self.position_duration}\n"
+                    f"[STEP] step={self.current_step}, action={action}, reward={reward:.5f}, pos={self.position}, entry_price={self.entry_price:.2f}, price={self._get_price():.2f}, duration={self.position_duration}\n"
                 )
 
         return self._get_observation(), reward, done, info
