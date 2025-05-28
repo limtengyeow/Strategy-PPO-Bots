@@ -6,8 +6,6 @@
     "MODEL_DIR": "models/",
     "EVAL_DIR": "eval/"
   },
-
-
   "features": {
     "OBS_WINDOW": 20,
     "DEBUG_FEATURES": true,
@@ -22,64 +20,29 @@
       { "type": "indicator", "field": "ema", "source": "close", "window": 20, "normalize": true, "method": "zscore" }
     ]
   },
-
-
   "actions": {
     "ALLOW_LONG": true,
     "ALLOW_SHORT": true
   },
-
   "rewards": {
     "REWARD_COMPONENTS": [
-      {
-        "type": "pnl",
-        "scale": 1000.0
-      },
-      {
-        "type": "cut_loss",
-        "threshold": -0.01,
-        "penalty_ratio": 2.0
-      },
-      {
-        "type": "overtrade_penalty",
-        "min_duration": 5,
-        "penalty_ratio": 1.0
-      },
-      {
-        "type": "trend_bonus",
-        "bonus_per_step": 0.001
-      },
-      {
-        "type": "breakout_reward",
-        "window": 50,
-        "bonus": 0.005
-      },
-      {
-        "type": "volatility_penalty",
-        "window": 20,
-        "threshold": 0.03,
-        "penalty": 0.002
-      },
-      {
-        "type": "profit_target_bonus",
-        "target_pct": 0.05,
-        "bonus": 0.01
-      },
-      {
-        "type": "time_penalty",
-        "penalty_per_step": 0.0005
-      }
+      { "type": "pnl", "scale": 1500.0 },
+      { "type": "cut_loss", "threshold": -0.005, "penalty_ratio": 3.0 },
+      { "type": "overtrade_penalty", "min_duration": 5, "penalty_ratio": 1.5 },
+      { "type": "trend_bonus", "bonus_per_step": 0.001 },
+      { "type": "breakout_reward", "window": 50, "bonus": 0.0075 },
+      { "type": "volatility_penalty", "window": 20, "threshold": 0.03, "penalty": 0.002 },
+      { "type": "profit_target_bonus", "target_pct": 0.04, "bonus": 0.012 },
+      { "type": "time_penalty", "penalty_per_step": 0.0005 }
     ],
     "REWARD_SCALE": 1.0,
     "CLIP_REWARD": null,
     "NORM_REWARD": false,
     "DEBUG_REWARDS": true
   },
-
-
   "training": {
     "DEFAULT_INTERVAL": "5min",
-    "TOTAL_TIMESTEPS": 10000,
+    "TOTAL_TIMESTEPS": 100000,
     "SAVE_FREQ": 100000,
     "EVAL_FREQ": 50000,
     "NUM_ENVS": 8,
@@ -87,8 +50,8 @@
     "SEED": 42,
     "RANDOM_START": true,
     "PPO_PARAMS": {
-      "learning_rate": 0.0003,
-      "n_steps": 2048,
+      "learning_rate": 0.0002,
+      "n_steps": 4096,
       "batch_size": 64,
       "n_epochs": 10,
       "gamma": 0.99,
@@ -102,15 +65,13 @@
       }
     }
   },
-
   "evaluation": {
-    "data_files": ["data/NVDA_test.csv"],
+    "data_files": [ "data/NVDA_test.csv" ],
     "n_eval_episodes": 5,
     "deterministic": true,
     "render": false,
     "output_file": "eval/eval_results.json"
   },
-
   "logging": {
     "use_mlflow": true,
     "mlflow_uri": "http://localhost:5000",
@@ -118,7 +79,6 @@
     "log_params": true,
     "log_metrics": true
   },
-
   "metrics": {
     "enable": true,
     "track": [
@@ -131,6 +91,5 @@
       "r_multiple"
     ]
   },
-
   "DEBUG": true
 }

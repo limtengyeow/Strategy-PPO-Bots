@@ -109,8 +109,21 @@ class TradingEnv(gym.Env):
         obs = self._get_features()
         self.obs_buffer.append(obs)
 
+        trade = None
         if self.position != 0:
             self.position_duration += 1
+
+            # Check if position just closed (e.g., action = 2)
+            if action == 2 and self.entry_price != 0:
+                pnl = (self._get_price() - self.entry_price) * self.position
+                trade = {
+                    "pnl": pnl / self.entry_price if self.entry_price != 0 else 0,
+                    "duration": self.position_duration,
+                    "entry_price": self.entry_price,
+                    "exit_price": self._get_price(),
+                    "position": self.position,
+                }
+                self.trade_log.append(trade)
 
         info = {
             "step": self.current_step,
@@ -119,7 +132,7 @@ class TradingEnv(gym.Env):
             "entry_price": self.entry_price,
             "price": self._get_price(),
             "duration": self.position_duration,
-            "trade_log": list(self.trade_log),  # Placeholder
+            "trades": [trade] if trade else [],
         }
 
         if self.env_debug:
