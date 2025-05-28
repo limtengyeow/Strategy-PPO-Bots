@@ -7,19 +7,15 @@
     "EVAL_DIR": "eval/"
   },
 
-
+ 
   "features": {
     "OBS_WINDOW": 20,
-    "DEBUG_FEATURES": true,
     "FEATURES": [
       { "type": "price", "field": "close", "normalize": true, "method": "zscore" },
       { "type": "price", "field": "volume", "normalize": true, "method": "rolling_zscore", "window": 20 },
       { "type": "indicator", "field": "vwap", "normalize": true, "method": "zscore" },
       { "type": "indicator", "field": "sma", "source": "close", "window": 14, "normalize": true, "method": "rolling_zscore" },
-      { "type": "indicator", "field": "ema", "source": "volume", "window": 10, "normalize": true, "method": "minmax" },
-      { "type": "indicator", "field": "rsi", "source": "close", "window": 14, "normalize": true, "method": "zscore" },
-      { "type": "indicator", "field": "atr", "window": 14, "normalize": true, "method": "zscore" },
-      { "type": "indicator", "field": "ema", "source": "close", "window": 20, "normalize": true, "method": "zscore" }
+      { "type": "indicator", "field": "ema", "source": "volume", "window": 10, "normalize": true, "method": "minmax" }
     ]
   },
 
@@ -79,7 +75,7 @@
 
   "training": {
     "DEFAULT_INTERVAL": "5min",
-    "TOTAL_TIMESTEPS": 10000,
+    "TOTAL_TIMESTEPS": 100000,
     "SAVE_FREQ": 100000,
     "EVAL_FREQ": 50000,
     "NUM_ENVS": 8,
