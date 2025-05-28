@@ -40,6 +40,30 @@
         "type": "overtrade_penalty",
         "min_duration": 5,
         "penalty_ratio": 1.0
+      },
+      {
+        "type": "trend_bonus",
+        "bonus_per_step": 0.001
+      },
+      {
+        "type": "breakout_reward",
+        "window": 50,
+        "bonus": 0.005
+      },
+      {
+        "type": "volatility_penalty",
+        "window": 20,
+        "threshold": 0.03,
+        "penalty": 0.002
+      },
+      {
+        "type": "profit_target_bonus",
+        "target_pct": 0.05,
+        "bonus": 0.01
+      },
+      {
+        "type": "time_penalty",
+        "penalty_per_step": 0.0005
       }
     ],
     "REWARD_SCALE": 1.0,
@@ -48,9 +72,10 @@
     "DEBUG_REWARDS": true
   },
 
+
   "training": {
     "DEFAULT_INTERVAL": "5min",
-    "TOTAL_TIMESTEPS": 1000000,
+    "TOTAL_TIMESTEPS": 10000,
     "SAVE_FREQ": 100000,
     "EVAL_FREQ": 50000,
     "NUM_ENVS": 8,
