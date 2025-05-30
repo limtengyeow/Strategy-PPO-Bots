@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jovyan/work/mlruns/0/15990583de3443a6b51449fe538ebda4/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 15990583de3443a6b51449fe538ebda4
+run_name: capable-auk-759
+run_uuid: 15990583de3443a6b51449fe538ebda4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748431410752
+status: 1
+tags: []
+user_id: devuser
