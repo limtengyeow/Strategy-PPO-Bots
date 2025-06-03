@@ -1,14 +1,16 @@
-import gym
+import os
 import random
+from collections import deque
+
+import gym
 import numpy as np
 import pandas as pd
 from gym import spaces
-from collections import deque
-import os
-from .feature_engineering import init_feature_space
+
 from .action_handler import take_action
-from .reward_calculator import calculate_reward
 from .observation_builder import build_observation
+from .reward_calculator import calculate_reward
+
 
 class TradingEnv(gym.Env):
     def __init__(self, config=None, df=None):
@@ -38,16 +40,20 @@ class TradingEnv(gym.Env):
         os.makedirs("logs", exist_ok=True)
         self._init_spaces()
 
-   # === Set seed for reproducibility ===
     def seed(self, seed=None):
         self._seed = seed
         np.random.seed(seed)
         random.seed(seed)
         return [seed]
 
-
     def _init_spaces(self):
-        self.df, self.feature_columns = init_feature_space(self.df, self.features_cfg, self.debug)
+        # Exclude non-numeric columns
+        self.feature_columns = [
+            col
+            for col in self.df.columns
+            if col not in ["timestamp", "date"]
+            and pd.api.types.is_numeric_dtype(self.df[col])
+        ]
         feature_dim = len(self.feature_columns)
 
         self.action_space = spaces.Discrete(3)  # 0 = hold, 1 = buy, 2 = sell
@@ -55,7 +61,7 @@ class TradingEnv(gym.Env):
             low=-np.inf,
             high=np.inf,
             shape=(feature_dim * self.obs_window,),
-            dtype=np.float32
+            dtype=np.float32,
         )
 
         if self.debug:
@@ -63,12 +69,16 @@ class TradingEnv(gym.Env):
             print(f"[OBS SPACE] Feature count: {feature_dim}")
             print(f"[OBS SPACE] Observation window: {self.obs_window}")
             print(f"[OBS SPACE] Final shape: {self.observation_space.shape}")
- 
 
     def reset(self):
+        max_start = len(self.df) - self.obs_window - 1
+        if max_start <= 0:
+            raise ValueError(
+                f"[ERROR] Not enough data to support obs_window={self.obs_window}. "
+                f"Data rows: {len(self.df)}. Required minimum rows: {self.obs_window + 1}"
+            )
 
         if self.cfg.get("training", {}).get("RANDOM_START", False):
-            max_start = len(self.df) - self.obs_window - 1
             self.current_step = np.random.randint(0, max_start)
         else:
             self.current_step = 0
@@ -78,9 +88,11 @@ class TradingEnv(gym.Env):
         self.obs_buffer.clear()
         self.trade_log.clear()
         self.position_duration = 0
+
         obs = self._get_features()
         for _ in range(self.obs_window):
             self.obs_buffer.append(obs)
+
         if self.debug:
             with open("logs/env_debug.log", "a") as f:
                 f.write(f"[RESET] Environment reset. Start step: {self.current_step}\n")
@@ -107,7 +119,7 @@ class TradingEnv(gym.Env):
             "entry_price": self.entry_price,
             "price": self._get_price(),
             "duration": self.position_duration,
-            "trade_log": list(self.trade_log)
+            "trade_log": list(self.trade_log),
         }
 
         if self.debug:
@@ -122,10 +134,14 @@ class TradingEnv(gym.Env):
         return self.df.iloc[self.current_step][self.price_field]
 
     def _get_features(self):
-        return self.df.loc[self.current_step, self.feature_columns].values.astype(np.float32)
+        return self.df.loc[self.current_step, self.feature_columns].values.astype(
+            np.float32
+        )
 
     def _get_observation(self):
         obs = build_observation(self.obs_buffer)
         if np.any(np.isnan(obs)):
-            raise ValueError("[NaN DETECTED] Observation contains NaN values. Check feature preprocessing.")
+            raise ValueError(
+                "[NaN DETECTED] Observation contains NaN values. Check feature preprocessing."
+            )
         return obs

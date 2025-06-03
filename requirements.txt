@@ -8,3 +8,4 @@ mlflow
 tensorboard
 cloudpickle
 polygon-api-client
+PyYAML

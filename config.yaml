@@ -1,0 +1,130 @@
+# =============================================================================
+# CONFIGURATION FILE FOR AI TRADING SYSTEM (PPO-BASED)
+#
+# This file defines the full setup for data generation, feature engineering,
+# reward shaping, model architecture, and training/evaluation workflows.
+#
+# Use this file to customize:
+# - Data sources (real market tickers via Polygon or simulated "@SIM" scenarios)
+# - Features to compute, how to normalize them, and for which timeframe (5min, daily)
+# - Reward logic for reinforcement learning agents
+# - PPO hyperparameters for training
+# - Logging, metrics, and evaluation settings
+#
+# =============================================================================
+
+env:
+  POLYGON_API_KEY: "ZAuGprSaaMMS8_7GeDVAzHJWfr0Vggqb"   # Your Polygon.io API key for fetching market data
+  DATA_FOLDER: "data/"                                  # Folder to save processed datasets
+  TENSORBOARD_LOG: "tb_logs/"                            # Directory for TensorBoard logs
+  MODEL_DIR: "models/"                                   # Directory to save trained models
+  EVAL_DIR: "eval/"                                      # Directory for evaluation outputs
+
+data:
+  tickers:                                               # List of tickers to process (use "@SIM" for simulated data)
+    - NVDA
+    - "@SIM"
+  default_interval: "5min"                               # Base timeframe for the dataset (5min for intraday)
+  start_date: "2023-01-01"                               # Start date for data fetching or simulation
+  end_date: "2023-03-05"                                 # End date for data fetching or simulation
+  output_formats:                                        # Output formats for processed data
+    - csv
+    - parquet
+
+features:
+  OBS_WINDOW: 20                                         # Observation window size for state representation
+  DEBUG_FEATURES: true                                   # Print debug logs for feature generation
+  FEATURES_5MIN:                                         # Features to compute on 5min data
+    - { type: price, field: close, normalize: true, method: zscore }
+    - { type: price, field: volume, normalize: true, method: rolling_zscore, window: 30 }
+    - { type: indicator, field: vwap, normalize: true, method: zscore }
+    - { type: indicator, field: ema, source: close, window: 10, normalize: true, method: zscore }
+    - { type: indicator, field: ema, source: close, window: 20, normalize: true, method: zscore }
+  FEATURES_DAILY:                                        # Features to compute on daily data (merged into 5min data)
+    - { type: indicator, field: ema, source: close, window: 10, normalize: true, method: zscore }
+    - { type: indicator, field: ema, source: close, window: 21, normalize: true, method: zscore }
+    - { type: indicator, field: sma, source: close, window: 50, normalize: true, method: zscore }
+    - { type: indicator, field: sma, source: close, window: 200, normalize: true, method: zscore }
+
+actions:
+  ALLOW_LONG: true                                       # Enable long positions
+  ALLOW_SHORT: true                                      # Enable short positions
+
+model:
+  action_size: 3                                         # Number of discrete actions: 0 = hold, 1 = buy, 2 = sell
+  hidden_size: 128                                       # Hidden size for the neural network (not used directly)
+
+rewards:
+  REWARD_COMPONENTS:                                     # List of reward components used to shape agent behavior
+    - { type: pnl, scale: 1000.0 }
+    - { type: cut_loss, threshold: -0.02, penalty_ratio: 0.5 }
+    - { type: overtrade_penalty, min_duration: 5, penalty_ratio: 0.1 }
+    - { type: trend_bonus, bonus_per_step: 0.005 }
+    - { type: breakout_reward, window: 50, bonus: 0.02 }
+    - { type: volatility_penalty, window: 20, threshold: 0.04, penalty: 0.002 }
+    - { type: profit_target_bonus, target_pct: 0.04, bonus: 0.03 }
+  REWARD_SCALE: 1.0                                      # Global reward scaling factor
+  CLIP_REWARD: null                                      # Optional clipping for rewards (set to a float or null)
+  NORM_REWARD: false                                     # Normalize rewards (set to true/false)
+  DEBUG_REWARDS: true                                    # Log reward components for debugging
+
+training:
+  DEFAULT_INTERVAL: "5min"                               # Training interval (must match the base timeframe)
+  SEED: 42                                               # Random seed for reproducibility
+  RANDOM_START: true                                     # Randomize start points in episodes
+  PPO_PARAMS:                                            # PPO hyperparameters (passed to Stable Baselines3)
+    learning_rate: 0.0002
+    n_steps: 8192
+    batch_size: 128
+    n_epochs: 10
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_range: 0.2
+    ent_coef: 0.05
+    vf_coef: 0.7
+    policy_kwargs:
+      net_arch: [256, 128, 64]                           # Network architecture: layers from input to output
+      activation_fn: relu                                # Activation function (relu, tanh, etc.)
+  TOTAL_TIMESTEPS: 500000                                # Total training timesteps
+  SAVE_FREQ: 50000                                       # Frequency of saving models (in timesteps)
+  EVAL_FREQ: 25000                                       # Frequency of evaluations (in timesteps)
+  NUM_ENVS: 8                                            # Number of parallel environments
+  USE_GPU: true                                          # Enable GPU acceleration (requires CUDA)
+
+evaluation:
+  data_files:                                            # List of test datasets for evaluation
+    - data/NVDA_test.csv
+  n_eval_episodes: 5                                     # Number of evaluation episodes per run
+  deterministic: true                                    # Use deterministic policy during evaluation
+  render: false                                          # Enable rendering (set to true for visualizations)
+  output_file: eval/eval_results.json                     # Path for evaluation results
+
+logging:
+  use_mlflow: true                                       # Enable MLflow tracking
+  mlflow_uri: "http://localhost:5000"                     # MLflow server URL
+  experiment_name: "Trading_Bots"                        # MLflow experiment name
+  log_params: true                                       # Log hyperparameters
+  log_metrics: true                                      # Log metrics
+
+metrics:
+  enable: true                                           # Enable system-wide metrics tracking
+  track:                                                 # Metrics to track (add/remove as needed)
+    - win_rate
+    - profit_factor
+    - sharpe_ratio
+    - max_drawdown
+    - expectancy
+    - avg_trade_duration
+    - r_multiple
+
+simulated_data:
+  scenarios: ["bull"]                                    # Simulation scenarios: bull, bear, range, etc.
+  base_price: 100                                        # Starting price for simulation
+  price_volatility: 1.0                                  # Standard deviation of price movements
+  volume_mean: 100000                                    # Average volume per bar
+  volume_std: 5000                                       # Standard deviation of volume
+  shock_frequency: 0.01                                  # Probability of a random shock at each step
+  shock_magnitude: 5                                     # Size of shock in price units
+  timezone: "America/New_York"                            # Timezone for timestamps
+
+DEBUG: true                                              # Global debug flag (enables verbose logging)

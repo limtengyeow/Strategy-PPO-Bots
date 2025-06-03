@@ -8,28 +8,28 @@
   },
 
   "data": {
-    "tickers": ["AAPL"],
+    "tickers": ["NVDA", "@SIM"],
     "default_interval": "5min",
     "start_date": "2023-01-01",
-    "end_date": "2023-06-30",
-    "output_formats": ["csv", "parquet"] 
+    "end_date": "2023-03-05",
+    "output_formats": ["csv", "parquet"]
   },
 
   "features": {
     "OBS_WINDOW": 20,
     "DEBUG_FEATURES": true,
-    "FEATURES": [
+    "FEATURES_5MIN": [
       { "type": "price", "field": "close", "normalize": true, "method": "zscore" },
       { "type": "price", "field": "volume", "normalize": true, "method": "rolling_zscore", "window": 30 },
       { "type": "indicator", "field": "vwap", "normalize": true, "method": "zscore" },
       { "type": "indicator", "field": "ema", "source": "close", "window": 10, "normalize": true, "method": "zscore" },
       { "type": "indicator", "field": "ema", "source": "close", "window": 20, "normalize": true, "method": "zscore" }
     ],
-    "DAILY_FEATURES": [
-      { "field": "ema", "source": "close", "window": 10 },
-      { "field": "ema", "source": "close", "window": 21 },
-      { "field": "sma", "source": "close", "window": 50 },
-      { "field": "sma", "source": "close", "window": 200 }
+    "FEATURES_DAILY": [
+      { "type": "indicator", "field": "ema", "source": "close", "window": 10, "normalize": true, "method": "zscore" },
+      { "type": "indicator", "field": "ema", "source": "close", "window": 21, "normalize": true, "method": "zscore" },
+      { "type": "indicator", "field": "sma", "source": "close", "window": 50, "normalize": true, "method": "zscore" },
+      { "type": "indicator", "field": "sma", "source": "close", "window": 200, "normalize": true, "method": "zscore" }
     ]
   },
 
@@ -116,6 +116,17 @@
       "avg_trade_duration",
       "r_multiple"
     ]
+  },
+
+  "simulated_data": {
+    "scenarios": ["bull"],
+    "base_price": 100,
+    "price_volatility": 1.0,
+    "volume_mean": 100000,
+    "volume_std": 5000,
+    "shock_frequency": 0.01,
+    "shock_magnitude": 5,
+    "timezone": "America/New_York"
   },
 
   "DEBUG": true
