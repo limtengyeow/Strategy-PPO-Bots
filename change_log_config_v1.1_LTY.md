@@ -1,0 +1,294 @@
+# 📦 Full Change Log: `config.yaml`
+
+## 🔖 Version: v1.1
+- 📅 Date: 2025-06-05
+- 🔀 Git Hash: [pending]
+- 🌿 Branch: [pending]
+- 📜 Description:
+  Remove API key from config. Add `bars_per_day` to data section.
+
+---
+
+## 🧠 Proposed Change
+
+### What Will Change
+- Remove POLYGON_API_KEY from `env`
+- Add bars_per_day: 78 to `data` section
+
+### Why It’s Needed
+- To support secure secret loading and flexible timeframe handling
+
+---
+
+## 🔐 BEFORE: Full Code Snapshot
+
+```yaml
+# =============================================================================
+# CONFIGURATION FILE FOR AI TRADING SYSTEM (PPO-BASED)
+#
+# This file defines the full setup for data generation, feature engineering,
+# reward shaping, model architecture, and training/evaluation workflows.
+#
+# Use this file to customize:
+# - Data sources (real market tickers via Polygon or simulated "@SIM" scenarios)
+# - Features to compute, how to normalize them, and for which timeframe (5min, daily)
+# - Reward logic for reinforcement learning agents
+# - PPO hyperparameters for training
+# - Logging, metrics, and evaluation settings
+#
+# =============================================================================
+env:
+  POLYGON_API_KEY: "ZAuGprSaaMMS8_7GeDVAzHJWfr0Vggqb"
+  DATA_FOLDER: "data/"
+  TENSORBOARD_LOG: "tb_logs/"
+  MODEL_DIR: "models/"
+  EVAL_DIR: "eval/"
+
+data:
+  tickers:
+    - NVDA
+    - "@SIM"
+  default_interval: "5min"
+  start_date: "2023-01-01"
+  end_date: "2023-03-05"
+  output_formats:
+    - csv
+    - parquet
+
+features:
+  OBS_WINDOW: 20
+  DEBUG_FEATURES: true
+  FEATURES_5MIN:
+    - { type: price, field: close, normalize: true, method: zscore }
+    - { type: price, field: volume, normalize: true, method: rolling_zscore, window: 30 }
+    - { type: indicator, field: vwap, normalize: true, method: zscore }
+    - { type: indicator, field: ema, source: close, window: 10, normalize: true, method: zscore }
+    - { type: indicator, field: ema, source: close, window: 20, normalize: true, method: zscore }
+  FEATURES_DAILY:
+    - { type: indicator, field: ema, source: close, window: 10, normalize: true, method: zscore }
+    - { type: indicator, field: ema, source: close, window: 21, normalize: true, method: zscore }
+    - { type: indicator, field: sma, source: close, window: 50, normalize: true, method: zscore }
+    - { type: indicator, field: sma, source: close, window: 200, normalize: true, method: zscore }
+
+actions:
+  ALLOW_LONG: true
+  ALLOW_SHORT: true
+
+model:
+  action_size: 3
+  hidden_size: 128
+
+rewards:
+  REWARD_COMPONENTS:
+    - { type: pnl, scale: 1000.0 }
+    - { type: cut_loss, threshold: -0.02, penalty_ratio: 0.5 }
+    - { type: overtrade_penalty, min_duration: 5, penalty_ratio: 0.1 }
+    - { type: trend_bonus, bonus_per_step: 0.005 }
+    - { type: breakout_reward, window: 50, bonus: 0.02 }
+    - { type: volatility_penalty, window: 20, threshold: 0.04, penalty: 0.002 }
+    - { type: profit_target_bonus, target_pct: 0.04, bonus: 0.03 }
+  REWARD_SCALE: 1.0
+  CLIP_REWARD: null
+  NORM_REWARD: false
+  DEBUG_REWARDS: true
+
+training:
+  DEFAULT_INTERVAL: "5min"
+  SEED: 42
+  RANDOM_START: true
+  PPO_PARAMS:
+    learning_rate: 0.0002
+    n_steps: 8192
+    batch_size: 128
+    n_epochs: 10
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_range: 0.2
+    ent_coef: 0.05
+    vf_coef: 0.7
+    policy_kwargs:
+      net_arch: [256, 128, 64]
+      activation_fn: relu
+  TOTAL_TIMESTEPS: 500000
+  SAVE_FREQ: 50000
+  EVAL_FREQ: 25000
+  NUM_ENVS: 8
+  USE_GPU: true
+
+evaluation:
+  data_files:
+    - data/NVDA_test.csv
+  n_eval_episodes: 5
+  deterministic: true
+  render: false
+  output_file: eval/eval_results.json
+
+logging:
+  use_mlflow: true
+  mlflow_uri: "http://localhost:5000"
+  experiment_name: "Trading_Bots"
+  log_params: true
+  log_metrics: true
+
+metrics:
+  enable: true
+  track:
+    - win_rate
+    - profit_factor
+    - sharpe_ratio
+    - max_drawdown
+    - expectancy
+    - avg_trade_duration
+    - r_multiple
+
+simulated_data:
+  scenarios: ["bull"]
+  base_price: 100
+  price_volatility: 1.0
+  volume_mean: 100000
+  volume_std: 5000
+  shock_frequency: 0.01
+  shock_magnitude: 5
+  timezone: "America/New_York"
+
+DEBUG: true
+
+```
+
+---
+
+## ✨ AFTER: Full Code Snapshot
+
+```yaml
+# =============================================================================
+# CONFIGURATION FILE FOR AI TRADING SYSTEM (PPO-BASED)
+#
+# This file defines the full setup for data generation, feature engineering,
+# reward shaping, model architecture, and training/evaluation workflows.
+#
+# Use this file to customize:
+# - Data sources (real market tickers via Polygon or simulated "@SIM" scenarios)
+# - Features to compute, how to normalize them, and for which timeframe (5min, daily)
+# - Reward logic for reinforcement learning agents
+# - PPO hyperparameters for training
+# - Logging, metrics, and evaluation settings
+#
+# =============================================================================
+env:
+  DATA_FOLDER: "data/"
+  TENSORBOARD_LOG: "tb_logs/"
+  MODEL_DIR: "models/"
+  EVAL_DIR: "eval/"
+
+data:
+  tickers:
+    - NVDA
+    - "@SIM"
+  default_interval: "5min"
+  start_date: "2023-01-01"
+  end_date: "2023-03-05"
+  bars_per_day: 78
+  output_formats:
+    - csv
+    - parquet
+
+features:
+  OBS_WINDOW: 20
+  DEBUG_FEATURES: true
+  FEATURES_5MIN:
+    - { type: price, field: close, normalize: true, method: zscore }
+    - { type: price, field: volume, normalize: true, method: rolling_zscore, window: 30 }
+    - { type: indicator, field: vwap, normalize: true, method: zscore }
+    - { type: indicator, field: ema, source: close, window: 10, normalize: true, method: zscore }
+    - { type: indicator, field: ema, source: close, window: 20, normalize: true, method: zscore }
+  FEATURES_DAILY:
+    - { type: indicator, field: ema, source: close, window: 10, normalize: true, method: zscore }
+    - { type: indicator, field: ema, source: close, window: 21, normalize: true, method: zscore }
+    - { type: indicator, field: sma, source: close, window: 50, normalize: true, method: zscore }
+    - { type: indicator, field: sma, source: close, window: 200, normalize: true, method: zscore }
+
+actions:
+  ALLOW_LONG: true
+  ALLOW_SHORT: true
+
+model:
+  action_size: 3
+  hidden_size: 128
+
+rewards:
+  REWARD_COMPONENTS:
+    - { type: pnl, scale: 1000.0 }
+    - { type: cut_loss, threshold: -0.02, penalty_ratio: 0.5 }
+    - { type: overtrade_penalty, min_duration: 5, penalty_ratio: 0.1 }
+    - { type: trend_bonus, bonus_per_step: 0.005 }
+    - { type: breakout_reward, window: 50, bonus: 0.02 }
+    - { type: volatility_penalty, window: 20, threshold: 0.04, penalty: 0.002 }
+    - { type: profit_target_bonus, target_pct: 0.04, bonus: 0.03 }
+  REWARD_SCALE: 1.0
+  CLIP_REWARD: null
+  NORM_REWARD: false
+  DEBUG_REWARDS: true
+
+training:
+  DEFAULT_INTERVAL: "5min"
+  SEED: 42
+  RANDOM_START: true
+  PPO_PARAMS:
+    learning_rate: 0.0002
+    n_steps: 8192
+    batch_size: 128
+    n_epochs: 10
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_range: 0.2
+    ent_coef: 0.05
+    vf_coef: 0.7
+    policy_kwargs:
+      net_arch: [256, 128, 64]
+      activation_fn: relu
+  TOTAL_TIMESTEPS: 500000
+  SAVE_FREQ: 50000
+  EVAL_FREQ: 25000
+  NUM_ENVS: 8
+  USE_GPU: true
+
+evaluation:
+  data_files:
+    - data/NVDA_test.csv
+  n_eval_episodes: 5
+  deterministic: true
+  render: false
+  output_file: eval/eval_results.json
+
+logging:
+  use_mlflow: true
+  mlflow_uri: "http://localhost:5000"
+  experiment_name: "Trading_Bots"
+  log_params: true
+  log_metrics: true
+
+metrics:
+  enable: true
+  track:
+    - win_rate
+    - profit_factor
+    - sharpe_ratio
+    - max_drawdown
+    - expectancy
+    - avg_trade_duration
+    - r_multiple
+
+simulated_data:
+  scenarios: ["bull"]
+  base_price: 100
+  price_volatility: 1.0
+  volume_mean: 100000
+  volume_std: 5000
+  shock_frequency: 0.01
+  shock_magnitude: 5
+  timezone: "America/New_York"
+
+DEBUG: true
+```
+
+---

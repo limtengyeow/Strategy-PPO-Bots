@@ -9,3 +9,4 @@ tensorboard
 cloudpickle
 polygon-api-client
 PyYAML
+python-dotenv
