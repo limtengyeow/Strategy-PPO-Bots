@@ -6,7 +6,7 @@ def calculate_reward(env):
     components = rewards_cfg.get("REWARD_COMPONENTS", [])
     reward = 0.0
 
-    current_price = env._get_price()
+    current_price = env._get_price()  # This correctly calls the TradingEnv method, which now uses raw_close_price_field
 
     # Calculate PnL reward
     if any(c.get("type") == "pnl" for c in components) and env.position != 0:
@@ -51,7 +51,10 @@ def calculate_reward(env):
             window = c.get("window", 50)
             bonus = c.get("bonus", 0.005)
             start = max(env.current_step - window, 0)
-            recent_prices = env.df.iloc[start : env.current_step][env.price_field]
+            # THIS IS THE CHANGE: Use env.raw_close_price_field instead of env.price_field
+            recent_prices = env.df.iloc[start : env.current_step][
+                env.raw_close_price_field
+            ]
             if env.position == 1 and current_price > recent_prices.max():
                 reward += bonus
             elif env.position == -1 and current_price < recent_prices.min():
@@ -64,7 +67,10 @@ def calculate_reward(env):
             threshold = c.get("threshold", 0.03)
             penalty = c.get("penalty", 0.002)
             start = max(env.current_step - window, 0)
-            recent_prices = env.df.iloc[start : env.current_step][env.price_field]
+            # THIS IS THE CHANGE: Use env.raw_close_price_field instead of env.price_field
+            recent_prices = env.df.iloc[start : env.current_step][
+                env.raw_close_price_field
+            ]
             if not recent_prices.empty:
                 vol = recent_prices.pct_change().std()
                 if vol > threshold:
@@ -99,8 +105,9 @@ def calculate_reward(env):
 
     # Normalize Reward
     if rewards_cfg.get("NORM_REWARD", False):
-        reward = (reward - env.df[env.price_field].mean()) / env.df[
-            env.price_field
+        # THIS IS THE CHANGE: Use env.raw_close_price_field instead of env.price_field
+        reward = (reward - env.df[env.raw_close_price_field].mean()) / env.df[
+            env.raw_close_price_field
         ].std()
 
     # Debug Logging (Jupyter-compatible)

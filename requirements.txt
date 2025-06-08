@@ -1,4 +1,4 @@
-stable-baselines3
+stable-baselines3[extra]
 shimmy>=2.0
 gym==0.25.2
 pandas
@@ -10,3 +10,4 @@ cloudpickle
 polygon-api-client
 PyYAML
 python-dotenv
+ipywidgets

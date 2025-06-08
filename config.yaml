@@ -21,7 +21,7 @@ env:
 data:
   tickers:
     - NVDA
-    - "@SIM"
+
   default_interval: "5min"
   start_date: "2023-01-01"
   end_date: "2023-03-05"
@@ -36,6 +36,12 @@ features:
   OBS_WINDOW: 20
   DEBUG_FEATURES: true
   FEATURES_1MIN:
+    - { type: price, field: open, normalize: false }
+    - { type: price, field: high, normalize: false }
+    - { type: price, field: low, normalize: false }
+    - { type: price, field: close, normalize: false } # <--- This ensures raw 'close' is in the parquet
+    - { type: price, field: volume, normalize: false }
+
     - { type: price, field: close, normalize: true, method: zscore }
     - { type: indicator, field: ema, source: close, window: 5, normalize: true, method: zscore }
     - { type: indicator, field: ema, source: close, window: 10, normalize: true, method: zscore }
@@ -90,9 +96,9 @@ training:
     vf_coef: 0.7
     policy_kwargs:
       net_arch: [256, 128, 64]
-      activation_fn: relu
-  TOTAL_TIMESTEPS: 500000
-  SAVE_FREQ: 50000
+      activation_fn_str: 'ReLU'
+  TOTAL_TIMESTEPS: 10000
+  SAVE_FREQ: 1000
   EVAL_FREQ: 25000
   NUM_ENVS: 8
   USE_GPU: true
